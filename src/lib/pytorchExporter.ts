@@ -1,20 +1,23 @@
-import { LayerNode, ImageShape } from '../types';
-import { getLayerInstance } from './layerutils';
+import { LayerNode, ImageShape } from "../types";
+import { getLayerInstance } from "./layerutils";
 
-export function exportPytorchCode(nodes: LayerNode[], inputShape: ImageShape): string {
+export function exportPytorchCode(
+  nodes: LayerNode[],
+  inputShape: ImageShape,
+): string {
   let initLines: string[] = [];
   let forwardLines: string[] = [];
-  
+
   let layerIndex = 1;
   let currentShape = { ...inputShape };
 
-  nodes.forEach(layer => {
-    let nameStr = layer.name.replace(/[^a-zA-Z0-9_]/g, '') || layer.type;
+  nodes.forEach((layer) => {
+    let nameStr = layer.name.replace(/[^a-zA-Z0-9_]/g, "") || layer.type;
     const attrName = `${nameStr}_${layerIndex++}`;
     try {
       const inst = getLayerInstance(layer);
       // We pass the indent context suited for class-level attributes placement in PyTorch
-      const moduleStr = inst.getPytorchCode(currentShape, '        ');
+      const moduleStr = inst.getPytorchCode(currentShape, "        ");
       if (moduleStr) {
         initLines.push(`self.${attrName} = ${moduleStr}`);
         forwardLines.push(`x = self.${attrName}(x)`);
@@ -29,18 +32,18 @@ export function exportPytorchCode(nodes: LayerNode[], inputShape: ImageShape): s
   code += `class CustomModel(nn.Module):\n`;
   code += `    def __init__(self):\n`;
   code += `        super(CustomModel, self).__init__()\n`;
-  
+
   if (initLines.length === 0) {
     code += `        pass\n`;
   } else {
-    code += initLines.map(l => `        ${l}`).join('\n') + '\n';
+    code += initLines.map((l) => `        ${l}`).join("\n") + "\n";
   }
-  
+
   code += `\n    def forward(self, x):\n`;
   if (forwardLines.length === 0) {
     code += `        return x\n`;
   } else {
-    code += forwardLines.map(l => `        ${l}`).join('\n') + '\n';
+    code += forwardLines.map((l) => `        ${l}`).join("\n") + "\n";
     code += `        return x\n`;
   }
 

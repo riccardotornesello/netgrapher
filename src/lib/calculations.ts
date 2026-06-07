@@ -1,4 +1,4 @@
-import { ImageShape, LayerNode } from '../types';
+import { ImageShape, LayerNode } from "../types";
 
 export interface LayerStats {
   parameterCount: number;
@@ -11,16 +11,20 @@ export interface LayerStats {
   explanation: string;
 }
 
-export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape: ImageShape): LayerStats {
+export function computeLayerStats(
+  inShape: ImageShape,
+  node: LayerNode,
+  outShape: ImageShape,
+): LayerStats {
   const params = node.params || {};
   let parameterCount = 0;
   let flopCount = 0;
-  let parameterFormula = '0';
-  let flopFormula = '0';
-  let dimensionFormulaH = 'H_out = H_in';
-  let dimensionFormulaW = 'W_out = W_in';
+  let parameterFormula = "0";
+  let flopFormula = "0";
+  let dimensionFormulaH = "H_out = H_in";
+  let dimensionFormulaW = "W_out = W_in";
   let dimensionFormulaD = undefined;
-  let explanation = '';
+  let explanation = "";
 
   const cin = inShape.c;
   const hin = inShape.h;
@@ -33,28 +37,28 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
   const dout = outShape.d;
 
   switch (node.type) {
-    case 'conv2d': {
+    case "conv2d": {
       const k = params.kernelSize ?? 3;
       const s = params.stride ?? 1;
-      const p = params.padding ?? 'same';
-      
+      const p = params.padding ?? "same";
+
       const weightParams = k * k * cin * cout;
       const biasParams = cout;
       parameterCount = weightParams + biasParams;
       parameterFormula = `(${k} × ${k} × ${cin} × ${cout}) [weights] + ${cout} [biases] = ${parameterCount.toLocaleString()}`;
-      
+
       // Each output pixel requires (K * K * C_in) MACs
       const macsPerPixel = k * k * cin;
       flopCount = hout * wout * cout * macsPerPixel * 2; // FLOPs = 2 * MACs
       flopFormula = `2 × (${hout} × ${wout} × ${cout}) [output size] × (${k} × ${k} × ${cin}) [MACs/pixel] = ${flopCount.toLocaleString()} FLOPs`;
 
-      if (p === 'same') {
+      if (p === "same") {
         dimensionFormulaH = `H_out = ⌈${hin} / ${s}⌉ = ${hout}`;
         dimensionFormulaW = `W_out = ⌈${win} / ${s}⌉ = ${wout}`;
-      } else if (p === 'valid') {
+      } else if (p === "valid") {
         dimensionFormulaH = `H_out = ⌊(${hin} - ${k}) / ${s}⌋ + 1 = ⌊(${hin - k}) / ${s}⌋ + 1 = ${hout}`;
         dimensionFormulaW = `W_out = ⌊(${win} - ${k}) / ${s}⌋ + 1 = ⌊(${win - k}) / ${s}⌋ + 1 = ${wout}`;
-      } else if (typeof p === 'number') {
+      } else if (typeof p === "number") {
         dimensionFormulaH = `H_out = ⌊(${hin} + 2×${p} - ${k}) / ${s}⌋ + 1 = ${hout}`;
         dimensionFormulaW = `W_out = ⌊(${win} + 2×${p} - ${k}) / ${s}⌋ + 1 = ${wout}`;
       }
@@ -62,10 +66,10 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'conv3d': {
+    case "conv3d": {
       const k = params.kernelSize ?? 3;
       const s = params.stride ?? 1;
-      const p = params.padding ?? 'same';
+      const p = params.padding ?? "same";
       const dInReal = din ?? 1;
       const dOutReal = dout ?? 1;
 
@@ -78,15 +82,15 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       flopCount = dOutReal * hout * wout * cout * macsPerPixel * 2;
       flopFormula = `2 × (${dOutReal} × ${hout} × ${wout} × ${cout}) × (${k} × ${k} × ${k} × ${cin}) = ${flopCount.toLocaleString()} FLOPs`;
 
-      if (p === 'same') {
+      if (p === "same") {
         dimensionFormulaD = `D_out = ⌈${dInReal} / ${s}⌉ = ${dOutReal}`;
         dimensionFormulaH = `H_out = ⌈${hin} / ${s}5 = ${hout}`;
         dimensionFormulaW = `W_out = ⌈${win} / ${s}⌉ = ${wout}`;
-      } else if (p === 'valid') {
+      } else if (p === "valid") {
         dimensionFormulaD = `D_out = ⌊(${dInReal} - ${k}) / ${s}⌋ + 1 = ${dOutReal}`;
         dimensionFormulaH = `H_out = ⌊(${hin} - ${k}) / ${s}⌋ + 1 = ${hout}`;
         dimensionFormulaW = `W_out = ⌊(${win} - ${k}) / ${s}⌋ + 1 = ${wout}`;
-      } else if (typeof p === 'number') {
+      } else if (typeof p === "number") {
         dimensionFormulaD = `D_out = ⌊(${dInReal} + 2×${p} - ${k}) / ${s}⌋ + 1 = ${dOutReal}`;
         dimensionFormulaH = `H_out = ⌊(${hin} + 2×${p} - ${k}) / ${s}⌋ + 1 = ${hout}`;
         dimensionFormulaW = `W_out = ⌊(${win} + 2×${p} - ${k}) / ${s}⌋ + 1 = ${wout}`;
@@ -95,14 +99,14 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'relu': {
+    case "relu": {
       parameterCount = 0;
       parameterFormula = `0 (Activation function has no learnable weights)`;
-      
+
       const elementsCap = cin * (din ?? 1) * hin * win;
       flopCount = elementsCap;
       flopFormula = `${elementsCap.toLocaleString()} comparisons [f(x) = max(0, x)] = ${flopCount.toLocaleString()} FLOPs`;
-      
+
       dimensionFormulaH = `H_out = H_in = ${hout}`;
       dimensionFormulaW = `W_out = W_in = ${wout}`;
       if (din !== undefined) dimensionFormulaD = `D_out = D_in = ${dout}`;
@@ -110,14 +114,14 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'sigmoid': {
+    case "sigmoid": {
       parameterCount = 0;
       parameterFormula = `0 (Activation function has no learnable weights)`;
-      
+
       const elementsCap = cin * (din ?? 1) * hin * win;
       flopCount = elementsCap * 4;
       flopFormula = `${elementsCap.toLocaleString()} elements × 4 operations [f(x) = 1 / (1 + e^-x)] = ${flopCount.toLocaleString()} FLOPs`;
-      
+
       dimensionFormulaH = `H_out = H_in = ${hout}`;
       dimensionFormulaW = `W_out = W_in = ${wout}`;
       if (din !== undefined) dimensionFormulaD = `D_out = D_in = ${dout}`;
@@ -125,14 +129,14 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'tanh': {
+    case "tanh": {
       parameterCount = 0;
       parameterFormula = `0 (Activation function has no learnable weights)`;
-      
+
       const elementsCap = cin * (din ?? 1) * hin * win;
       flopCount = elementsCap * 5;
       flopFormula = `${elementsCap.toLocaleString()} elements × 5 operations [f(x) = tanh(x)] = ${flopCount.toLocaleString()} FLOPs`;
-      
+
       dimensionFormulaH = `H_out = H_in = ${hout}`;
       dimensionFormulaW = `W_out = W_in = ${wout}`;
       if (din !== undefined) dimensionFormulaD = `D_out = D_in = ${dout}`;
@@ -140,14 +144,14 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'leaky_relu': {
+    case "leaky_relu": {
       parameterCount = 0;
       parameterFormula = `0 (Activation function has no learnable weights)`;
-      
+
       const elementsCap = cin * (din ?? 1) * hin * win;
       flopCount = elementsCap * 2;
       flopFormula = `${elementsCap.toLocaleString()} elements × 2 operations [f(x) = max(0.01x, x)] = ${flopCount.toLocaleString()} FLOPs`;
-      
+
       dimensionFormulaH = `H_out = H_in = ${hout}`;
       dimensionFormulaW = `W_out = W_in = ${wout}`;
       if (din !== undefined) dimensionFormulaD = `D_out = D_in = ${dout}`;
@@ -155,14 +159,14 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'elu': {
+    case "elu": {
       parameterCount = 0;
       parameterFormula = `0 (Activation function has no learnable weights)`;
-      
+
       const elementsCap = cin * (din ?? 1) * hin * win;
       flopCount = elementsCap * 3;
       flopFormula = `${elementsCap.toLocaleString()} elements × 3 operations [f(x) = x if x >= 0 else a(e^x - 1)] = ${flopCount.toLocaleString()} FLOPs`;
-      
+
       dimensionFormulaH = `H_out = H_in = ${hout}`;
       dimensionFormulaW = `W_out = W_in = ${wout}`;
       if (din !== undefined) dimensionFormulaD = `D_out = D_in = ${dout}`;
@@ -170,14 +174,14 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'gelu': {
+    case "gelu": {
       parameterCount = 0;
       parameterFormula = `0 (Activation function has no learnable weights)`;
-      
+
       const elementsCap = cin * (din ?? 1) * hin * win;
       flopCount = elementsCap * 6;
       flopFormula = `${elementsCap.toLocaleString()} elements × 6 operations [f(x) = x × CDF(x)] = ${flopCount.toLocaleString()} FLOPs`;
-      
+
       dimensionFormulaH = `H_out = H_in = ${hout}`;
       dimensionFormulaW = `W_out = W_in = ${wout}`;
       if (din !== undefined) dimensionFormulaD = `D_out = D_in = ${dout}`;
@@ -185,13 +189,13 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'maxpool2d': {
+    case "maxpool2d": {
       const k = params.poolSize ?? 2;
       const s = params.stride ?? 2;
-      
+
       parameterCount = 0;
       parameterFormula = `0 (Pooling layers carry no learnable parameters)`;
-      
+
       const elementsOut = cout * hout * wout;
       flopCount = elementsOut * (k * k - 1); // finding max of k*k elements needs k*k-1 comparisons
       flopFormula = `${elementsOut.toLocaleString()} pixels × (${k}² - 1) comparisons = ${flopCount.toLocaleString()} FLOPs`;
@@ -202,7 +206,7 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'maxpool3d': {
+    case "maxpool3d": {
       const k = params.poolSize ?? 2;
       const s = params.stride ?? 2;
       const dInReal = din ?? 1;
@@ -222,7 +226,7 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'linear': {
+    case "linear": {
       const outF = params.outFeatures ?? 128;
       const inF = cin * (din ?? 1) * hin * win;
 
@@ -240,12 +244,12 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'flatten': {
+    case "flatten": {
       parameterCount = 0;
       parameterFormula = `0 (Spatial folding has no parameter cost)`;
       flopCount = 0;
       flopFormula = `0 (Pure indexing/view operation in PyTorch/TF)`;
-      
+
       const elements = cin * (din ?? 1) * hin * win;
       dimensionFormulaH = `H_out = 1`;
       dimensionFormulaW = `W_out = 1`;
@@ -253,10 +257,10 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'dropout': {
+    case "dropout": {
       parameterCount = 0;
       parameterFormula = `0 (Regularization logic has no parameters)`;
-      
+
       // Random generation/masking
       const elements = cin * (din ?? 1) * hin * win;
       flopCount = elements; // scaling elements during training
@@ -268,11 +272,11 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'batchnorm2d': {
+    case "batchnorm2d": {
       // 4 parameter arrays per channel: scale (gamma), shift (beta), rolling mean, rolling var. Mean and Variance are static (non-trainable) but still parameters
       parameterCount = cin * 4;
       parameterFormula = `${cin} channels × 4 params/channel = ${parameterCount.toLocaleString()}`;
-      
+
       const elements = cin * hin * win;
       // Formula: y = (x - mean) / sqrt(var + eps) * gamma + beta => ~4 float actions per item
       flopCount = elements * 4;
@@ -284,7 +288,7 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'batchnorm3d': {
+    case "batchnorm3d": {
       parameterCount = cin * 4;
       parameterFormula = `${cin} channels × 4 params/channel = ${parameterCount.toLocaleString()}`;
 
@@ -299,7 +303,7 @@ export function computeLayerStats(inShape: ImageShape, node: LayerNode, outShape
       break;
     }
 
-    case 'group': {
+    case "group": {
       parameterCount = 0;
       parameterFormula = `Calculated in sub-modules`;
       flopCount = 0;

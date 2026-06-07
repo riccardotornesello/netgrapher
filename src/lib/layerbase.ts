@@ -1,4 +1,4 @@
-import { ImageShape, LayerNode } from '../types';
+import { ImageShape, LayerNode } from "../types";
 
 export interface CompatibilityResult {
   compatible: boolean;

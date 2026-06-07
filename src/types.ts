@@ -1,6 +1,22 @@
-import React from 'react';
+import React from "react";
 
-export type LayerType = 'conv2d' | 'conv3d' | 'relu' | 'sigmoid' | 'tanh' | 'leaky_relu' | 'elu' | 'gelu' | 'group' | 'maxpool2d' | 'maxpool3d' | 'linear' | 'flatten' | 'dropout' | 'batchnorm2d' | 'batchnorm3d';
+export type LayerType =
+  | "conv2d"
+  | "conv3d"
+  | "relu"
+  | "sigmoid"
+  | "tanh"
+  | "leaky_relu"
+  | "elu"
+  | "gelu"
+  | "group"
+  | "maxpool2d"
+  | "maxpool3d"
+  | "linear"
+  | "flatten"
+  | "dropout"
+  | "batchnorm2d"
+  | "batchnorm3d";
 
 export interface ImageShape {
   c: number;
@@ -13,7 +29,7 @@ export interface Conv2DParams {
   filters: number;
   kernelSize: number;
   stride: number;
-  padding: 'valid' | 'same' | number;
+  padding: "valid" | "same" | number;
 }
 
 export interface LayerNode {
@@ -28,7 +44,13 @@ export interface LayerNode {
 export interface LayerDescription {
   id: string;
   name: string;
-  category: 'Convolutional' | 'Activation' | 'Pooling' | 'Linear & Structural' | 'Regularization' | 'Normalization';
+  category:
+    | "Convolutional"
+    | "Activation"
+    | "Pooling"
+    | "Linear & Structural"
+    | "Regularization"
+    | "Normalization";
   concept: string;
   keyTakeaways: string[];
   proTips: string;
@@ -50,4 +72,3 @@ export interface AddModalTarget {
   parentId?: string;
   index: number;
 }
-

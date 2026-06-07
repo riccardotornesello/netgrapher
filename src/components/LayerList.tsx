@@ -1,9 +1,12 @@
-import React from 'react';
-import { ImageShape, LayerNode } from '../types';
-import { calculateOutputShape, checkLayerCompatibility } from '../lib/networkUtils';
-import { LayerBlock } from './LayerBlock';
-import { ShapeToken } from './ShapeToken';
-import { AddBetweenButton } from './AddBetweenButton';
+import React from "react";
+import { ImageShape, LayerNode } from "../types";
+import {
+  calculateOutputShape,
+  checkLayerCompatibility,
+} from "../lib/networkUtils";
+import { LayerBlock } from "./LayerBlock";
+import { ShapeToken } from "./ShapeToken";
+import { AddBetweenButton } from "./AddBetweenButton";
 
 interface LayerListProps {
   nodes: LayerNode[];
@@ -21,13 +24,17 @@ export function LayerList({ nodes, initialShape, parentId }: LayerListProps) {
 
       {nodes.map((node, index) => {
         const inShape = currentShape;
-        
-        let compatibility = { compatible: true, reason: undefined as string | undefined };
-        
+
+        let compatibility = {
+          compatible: true,
+          reason: undefined as string | undefined,
+        };
+
         if (hasIncompatibilityOccurred || !inShape) {
-          compatibility = { 
-            compatible: false, 
-            reason: "Incoming dimensions are invalid due to previous configuration errors." 
+          compatibility = {
+            compatible: false,
+            reason:
+              "Incoming dimensions are invalid due to previous configuration errors.",
           };
           hasIncompatibilityOccurred = true;
         } else {
@@ -48,10 +55,10 @@ export function LayerList({ nodes, initialShape, parentId }: LayerListProps) {
 
         return (
           <React.Fragment key={node.id}>
-            <LayerBlock 
-              node={node} 
-              inShape={inShape || { c: 0, h: 0, w: 0 }} 
-              outShape={outShape} 
+            <LayerBlock
+              node={node}
+              inShape={inShape || { c: 0, h: 0, w: 0 }}
+              outShape={outShape}
               compatibility={compatibility}
             />
             {outShape ? (

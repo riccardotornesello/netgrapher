@@ -1,5 +1,5 @@
-import React from 'react';
-import katex from 'katex';
+import React from "react";
+import katex from "katex";
 
 interface LatexProps {
   math: string;

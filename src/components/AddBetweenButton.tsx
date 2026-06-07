@@ -1,6 +1,6 @@
-import React from 'react';
-import { Plus } from 'lucide-react';
-import { useNetwork } from '../context/NetworkContext';
+import React from "react";
+import { Plus } from "lucide-react";
+import { useNetwork } from "../context/NetworkContext";
 
 interface AddBetweenButtonProps {
   parentId?: string;
@@ -14,7 +14,7 @@ export function AddBetweenButton({ parentId, index }: AddBetweenButtonProps) {
     <div className="relative w-full flex items-center justify-center h-8 group/add">
       {/* Subtle guide line */}
       <div className="absolute h-full w-[1px] bg-zinc-700/50 group-hover/add:bg-indigo-500/80 transition-colors z-0" />
-      
+
       <button
         onClick={(e) => {
           e.stopPropagation();
