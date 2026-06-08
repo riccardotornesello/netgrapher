@@ -1,8 +1,13 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "maxpool3d",
   name: "3D Max Pooling (MaxPool3D)",
   category: "Pooling",
@@ -28,24 +33,25 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.MaxPooling3D(pool_size=2, strides=2)`,
 };
 
-export const InteractiveSimulator = () => {
-  return (
-    <div className="w-full text-center flex flex-col items-center gap-4 py-3 select-none">
-      <div className="relative w-36 h-24 flex items-center justify-center">
-        <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-800 rounded-lg -rotate-12 absolute shadow-lg" />
-        <div className="w-10 h-10 bg-indigo-500/20 border-l border-b border-indigo-400/80 rounded absolute translate-x-4 translate-y-4" />
-      </div>
-
-      <p className="text-xs text-zinc-400 max-w-md antialiased leading-relaxed">
-        Analogous to 2D max pooling but aggregates maximum spatial pixels across
-        3D blocks ($K \times K \times K$). Essential to scale down large
-        volumetric files cleanly without adding training weight cost!
-      </p>
+const MaxPool3DDemo: React.FC = () => (
+  <div className="w-full text-center flex flex-col items-center gap-4 py-3 select-none">
+    <div className="relative w-36 h-24 flex items-center justify-center">
+      <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-800 rounded-lg -rotate-12 absolute shadow-lg" />
+      <div className="w-10 h-10 bg-indigo-500/20 border-l border-b border-indigo-400/80 rounded absolute translate-x-4 translate-y-4" />
     </div>
-  );
-};
+
+    <p className="text-xs text-zinc-400 max-w-md antialiased leading-relaxed">
+      Analogous to 2D max pooling but aggregates maximum spatial pixels across
+      3D blocks ($K \times K \times K$). Essential to scale down large
+      volumetric files cleanly without adding training weight cost!
+    </p>
+  </div>
+);
 
 export class MaxPool3DLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [MaxPool3DDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     const p = this.node.params || {};
     const k = p.poolSize || 2;
@@ -85,14 +91,36 @@ export class MaxPool3DLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const p = this.node.params || {};
+    const k = p.poolSize ?? 2;
+    const s = p.stride ?? 2;
+    const { c: cout, h: hout, w: wout } = outShape;
+    const dout = outShape.d ?? 1;
+    const din = inShape.d ?? 1;
+
+    const flopCount = cout * dout * hout * wout * (k * k * k - 1);
+
+    return {
+      parameterCount: 0,
+      flopCount,
+      parameterFormula: `0 (Pooling layers carry no learnable parameters)`,
+      flopFormula: `${(cout * dout * hout * wout).toLocaleString()} sub-elements × (${k}³ - 1) = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = ⌊(${inShape.h} - ${k}) / ${s}⌋ + 1 = ${hout}`,
+      dimensionFormulaW: `W_out = ⌊(${inShape.w} - ${k}) / ${s}⌋ + 1 = ${wout}`,
+      dimensionFormulaD: `D_out = ⌊(${din} - ${k}) / ${s}⌋ + 1 = ${dout}`,
+      explanation: `Performs max-pooling along 3D volumetric dimensions (${k}×${k}×${k}) to reduce data dimensionality across depth, width, and height.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const k = p.poolSize || 2;
     const s = p.stride || 2;
     return `nn.MaxPool3d(kernel_size=${k}, stride=${s})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const k = p.poolSize || 2;
     const s = p.stride || 2;

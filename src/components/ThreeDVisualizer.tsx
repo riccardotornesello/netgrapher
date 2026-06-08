@@ -5,7 +5,7 @@ import {
   checkLayerCompatibility,
   calculateOutputShape,
 } from "../lib/networkUtils";
-import { computeLayerStats } from "../lib/calculations";
+import { getLayerInstance } from "../layers";
 import {
   Rotate3d,
   Layers,
@@ -575,13 +575,13 @@ export function ThreeDVisualizer() {
   );
   const selectedTrace =
     selectedNodeIndex !== -1 ? traceLayers[selectedNodeIndex] : traceLayers[0]; // defaults to input
-  const stats = selectedTrace.outShape
-    ? computeLayerStats(
-        selectedTrace.inShape,
-        selectedTrace.node || { id: "in", name: "Input", type: "flatten" },
-        selectedTrace.outShape,
-      )
-    : null;
+  const stats =
+    selectedTrace.outShape && selectedTrace.node
+      ? getLayerInstance(selectedTrace.node).computeStats(
+          selectedTrace.inShape,
+          selectedTrace.outShape,
+        )
+      : null;
 
   return (
     <div className="flex flex-col xl:flex-row gap-6 h-full min-h-[520px] relative text-zinc-300">

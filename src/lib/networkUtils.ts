@@ -1,5 +1,5 @@
 import { ImageShape, LayerNode } from "../types";
-import { getLayerInstance } from "./layerutils";
+import { getLayerInstance } from "../layers";
 
 export const generateId = () => Math.random().toString(36).substring(2, 9);
 

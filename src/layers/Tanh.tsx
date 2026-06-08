@@ -1,9 +1,15 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
+
 import { ActivationSimulator } from "./ActivationHelper";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "tanh",
   name: "Hyperbolic Tangent (Tanh)",
   category: "Activation",
@@ -27,24 +33,43 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.Activation('tanh')`,
 };
 
-export const InteractiveSimulator = () => {
-  return <ActivationSimulator type="tanh" name="Tanh" />;
-};
+const TanhDemo: React.FC = () => (
+  <ActivationSimulator type="tanh" name="Tanh" />
+);
 
 export class TanhLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [TanhDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
 
-  checkCompatibility(inputShape: ImageShape): CompatibilityResult {
+  checkCompatibility(_inputShape: ImageShape): CompatibilityResult {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+    const dim =
+      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
+    return {
+      parameterCount: 0,
+      flopCount: elements * 5,
+      parameterFormula: `0 (Activation function has no learnable weights)`,
+      flopFormula: `${elements.toLocaleString()} elements × 5 operations [f(x) = tanh(x)] = ${(elements * 5).toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+      dimensionFormulaD: dim,
+      explanation: `Maps inputs to the (-1, 1) range around zero, keeping activations zero-centered to stabilize deep computational paths.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     return `nn.Tanh()`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.Activation('tanh')`;
   }
 }

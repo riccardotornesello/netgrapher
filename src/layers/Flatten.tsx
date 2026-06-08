@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { Sliders } from "lucide-react";
 import { cn } from "../lib/utils";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "flatten",
   name: "Tensor Flattening (Flatten)",
   category: "Linear & Structural",
@@ -29,7 +34,7 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.Flatten()`,
 };
 
-export const InteractiveSimulator = () => {
+const FlattenDemo: React.FC = () => {
   const [isFlattened, setIsFlattened] = useState<boolean>(false);
 
   const flattenSourceMap = [
@@ -113,20 +118,37 @@ export const InteractiveSimulator = () => {
 };
 
 export class FlattenLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [FlattenDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     const dStr = inputShape.d ? inputShape.d : 1;
     return { c: inputShape.c * dStr * inputShape.h * inputShape.w, h: 1, w: 1 };
   }
 
-  checkCompatibility(inputShape: ImageShape): CompatibilityResult {
+  checkCompatibility(_inputShape: ImageShape): CompatibilityResult {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, _outShape: ImageShape): LayerStats {
+    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+
+    return {
+      parameterCount: 0,
+      flopCount: 0,
+      parameterFormula: `0 (Spatial folding has no parameter cost)`,
+      flopFormula: `0 (Pure indexing/view operation in PyTorch/TF)`,
+      dimensionFormulaH: `H_out = 1`,
+      dimensionFormulaW: `W_out = 1`,
+      explanation: `Collapses multidimensional spatial inputs into a single continuous 1D array of size ${elements.toLocaleString()} for processing by downstream Dense/Fully connected layers.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     return `nn.Flatten()`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.Flatten()`;
   }
 }

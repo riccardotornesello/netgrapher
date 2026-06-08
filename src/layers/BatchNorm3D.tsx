@@ -1,8 +1,13 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "batchnorm3d",
   name: "3D Batch Normalization",
   category: "Normalization",
@@ -28,24 +33,25 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.BatchNormalization()`,
 };
 
-export const InteractiveSimulator = () => {
-  return (
-    <div className="w-full text-center flex flex-col items-center gap-4 py-3 select-none">
-      <div className="relative w-36 h-24 flex items-center justify-center">
-        <div className="w-12 h-12 bg-indigo-505/10 border border-indigo-700/60 rounded-xl relative shadow-lg" />
-        <div className="w-12 h-12 bg-cyan-705/10 border-l border-b border-cyan-400/80 rounded-xl absolute translate-x-3 translate-y-3" />
-      </div>
-
-      <p className="text-xs text-zinc-400 max-w-md antialiased leading-relaxed">
-        Extends batch normalization steps over entire voxel structures or
-        temporal blocks sequentially. Operates identical arithmetic parameters
-        but maps statistics indices to complete multi-D channels!
-      </p>
+const BatchNorm3DDemo: React.FC = () => (
+  <div className="w-full text-center flex flex-col items-center gap-4 py-3 select-none">
+    <div className="relative w-36 h-24 flex items-center justify-center">
+      <div className="w-12 h-12 bg-indigo-505/10 border border-indigo-700/60 rounded-xl relative shadow-lg" />
+      <div className="w-12 h-12 bg-cyan-705/10 border-l border-b border-cyan-400/80 rounded-xl absolute translate-x-3 translate-y-3" />
     </div>
-  );
-};
+
+    <p className="text-xs text-zinc-400 max-w-md antialiased leading-relaxed">
+      Extends batch normalization steps over entire voxel structures or temporal
+      blocks sequentially. Operates identical arithmetic parameters but maps
+      statistics indices to complete multi-D channels!
+    </p>
+  </div>
+);
 
 export class BatchNorm3DLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [BatchNorm3DDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
@@ -60,11 +66,28 @@ export class BatchNorm3DLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const cin = inShape.c;
+    const parameterCount = cin * 4;
+    const flopCount = cin * (inShape.d ?? 1) * inShape.h * inShape.w * 4;
+
+    return {
+      parameterCount,
+      flopCount,
+      parameterFormula: `${cin} channels × 4 params/channel = ${parameterCount.toLocaleString()}`,
+      flopFormula: `${(cin * (inShape.d ?? 1) * inShape.h * inShape.w).toLocaleString()} elements × 4 = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+      dimensionFormulaD: `D_out = D_in = ${outShape.d}`,
+      explanation: `Performs batch normalization over 3D tensor volumes per channel. Combats internal covariate shift and promotes steep gradient propagation.`,
+    };
+  }
+
+  getPytorchCode(shapeBefore: ImageShape, _indent: string): string {
     return `nn.BatchNorm3d(${shapeBefore.c})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.BatchNormalization()`;
   }
 }

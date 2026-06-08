@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Sliders, ArrowRight } from "lucide-react";
 import { cn } from "../lib/utils";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  Layer,
+  CompatibilityResult,
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "conv2d",
   name: "2D Convolution (Conv2D)",
   category: "Convolutional",
@@ -32,7 +37,7 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\n# Input tensor layout: (Batch, Height, Width, In_Channels)\nlayer = layers.Conv2D(\n    filters=32,\n    kernel_size=3,\n    strides=1,\n    padding='same' # 'same' pads zeroes to keep dimensions\n)`,
 };
 
-export const InteractiveSimulator = () => {
+const Conv2DDemo: React.FC = () => {
   const [convSimStep, setConvSimStep] = useState<number>(0);
   const [isConvSimRunning, setIsConvSimRunning] = useState<boolean>(true);
 
@@ -230,6 +235,9 @@ export const InteractiveSimulator = () => {
 };
 
 export class Conv2DLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [Conv2DDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     const { filters, kernelSize, stride, padding } = this.node.params || {};
     const k = kernelSize || 3;
@@ -283,7 +291,7 @@ export class Conv2DLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  getPytorchCode(shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const outC = p.filters || 32;
     const k = p.kernelSize || 3;
@@ -294,7 +302,42 @@ export class Conv2DLayer extends Layer {
     return `nn.Conv2d(in_channels=${shapeBefore.c}, out_channels=${outC}, kernel_size=${k}, stride=${s}, padding=${padStr})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const p = this.node.params || {};
+    const k = p.kernelSize ?? 3;
+    const s = p.stride ?? 1;
+    const pad = p.padding ?? "same";
+    const { c: cin, h: hin, w: win } = inShape;
+    const { c: cout, h: hout, w: wout } = outShape;
+
+    const parameterCount = k * k * cin * cout + cout;
+    const flopCount = hout * wout * cout * k * k * cin * 2;
+
+    let dimensionFormulaH: string;
+    let dimensionFormulaW: string;
+    if (pad === "same") {
+      dimensionFormulaH = `H_out = ⌈${hin} / ${s}⌉ = ${hout}`;
+      dimensionFormulaW = `W_out = ⌈${win} / ${s}⌉ = ${wout}`;
+    } else if (pad === "valid") {
+      dimensionFormulaH = `H_out = ⌊(${hin} - ${k}) / ${s}⌋ + 1 = ${hout}`;
+      dimensionFormulaW = `W_out = ⌊(${win} - ${k}) / ${s}⌋ + 1 = ${wout}`;
+    } else {
+      dimensionFormulaH = `H_out = ⌊(${hin} + 2×${pad} - ${k}) / ${s}⌋ + 1 = ${hout}`;
+      dimensionFormulaW = `W_out = ⌊(${win} + 2×${pad} - ${k}) / ${s}⌋ + 1 = ${wout}`;
+    }
+
+    return {
+      parameterCount,
+      flopCount,
+      parameterFormula: `(${k} × ${k} × ${cin} × ${cout}) [weights] + ${cout} [biases] = ${parameterCount.toLocaleString()}`,
+      flopFormula: `2 × (${hout} × ${wout} × ${cout}) × (${k} × ${k} × ${cin}) = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH,
+      dimensionFormulaW,
+      explanation: `Slices an input of ${cin} activation maps with a bank of ${cout} slideable 2D filters of spatial dimension ${k}×${k}. Computes localized feature representations.`,
+    };
+  }
+
+  getTensorFlowCode(_shapeBefore: ImageShape, indent: string): string {
     const p = this.node.params || {};
     const outC = p.filters || 32;
     const k = p.kernelSize || 3;

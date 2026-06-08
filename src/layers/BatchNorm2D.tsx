@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import { Sliders } from "lucide-react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "batchnorm2d",
   name: "2D Batch Normalization",
   category: "Normalization",
@@ -31,7 +36,7 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.BatchNormalization()`,
 };
 
-export const InteractiveSimulator = () => {
+const BatchNorm2DDemo: React.FC = () => {
   const [bnParams, setBnParams] = useState({ gamma: 1.0, beta: 0.0 });
   const [bnBatchInputs] = useState<number[]>([12, 18, 5, 25]);
 
@@ -128,6 +133,9 @@ export const InteractiveSimulator = () => {
 };
 
 export class BatchNorm2DLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [BatchNorm2DDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
@@ -142,11 +150,27 @@ export class BatchNorm2DLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const cin = inShape.c;
+    const parameterCount = cin * 4;
+    const flopCount = cin * inShape.h * inShape.w * 4;
+
+    return {
+      parameterCount,
+      flopCount,
+      parameterFormula: `${cin} channels × 4 params/channel = ${parameterCount.toLocaleString()}`,
+      flopFormula: `${(cin * inShape.h * inShape.w).toLocaleString()} elements × 4 (normalize + scale) = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+      explanation: `Normalizes the active feature maps over batches per channel coordinate. Helps avoid internal covariate shift, allowing faster learning rates and robust stability.`,
+    };
+  }
+
+  getPytorchCode(shapeBefore: ImageShape, _indent: string): string {
     return `nn.BatchNorm2d(${shapeBefore.c})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.BatchNormalization()`;
   }
 }

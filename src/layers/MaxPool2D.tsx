@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Sliders, RefreshCw, ArrowRight } from "lucide-react";
 import { cn } from "../lib/utils";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "maxpool2d",
   name: "2D Max Pooling (MaxPool2D)",
   category: "Pooling",
@@ -31,7 +36,7 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.MaxPooling2D(pool_size=2, strides=2)`,
 };
 
-export const InteractiveSimulator = () => {
+const MaxPool2DDemo: React.FC = () => {
   const [poolSimStep, setPoolSimStep] = useState<number>(0);
 
   useEffect(() => {
@@ -210,6 +215,9 @@ export const InteractiveSimulator = () => {
 };
 
 export class MaxPool2DLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [MaxPool2DDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     const p = this.node.params || {};
     const k = p.poolSize || 2;
@@ -240,14 +248,33 @@ export class MaxPool2DLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const p = this.node.params || {};
+    const k = p.poolSize ?? 2;
+    const s = p.stride ?? 2;
+    const { c: cout, h: hout, w: wout } = outShape;
+
+    const flopCount = cout * hout * wout * (k * k - 1);
+
+    return {
+      parameterCount: 0,
+      flopCount,
+      parameterFormula: `0 (Pooling layers carry no learnable parameters)`,
+      flopFormula: `${(cout * hout * wout).toLocaleString()} pixels × (${k}² - 1) comparisons = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = ⌊(${inShape.h} - ${k}) / ${s}⌋ + 1 = ${hout}`,
+      dimensionFormulaW: `W_out = ⌊(${inShape.w} - ${k}) / ${s}⌋ + 1 = ${wout}`,
+      explanation: `Downsamples the spatial map by sliding a ${k}×${k} window with stride ${s} and extracting the maximum value. Provides translational invariance & reduces memory footprints.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const k = p.poolSize || 2;
     const s = p.stride || 2;
     return `nn.MaxPool2d(kernel_size=${k}, stride=${s})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const k = p.poolSize || 2;
     const s = p.stride || 2;

@@ -1,68 +1,59 @@
-import { LayerModule } from "../types";
+import React from "react";
+import {
+  LayerNode,
+  LayerDescription,
+  Layer,
+  CompatibilityResult,
+  LayerType,
+} from "../types";
 
-import * as Conv2D from "./Conv2D";
-import * as Conv3D from "./Conv3D";
-import * as ReLU from "./ReLU";
-import * as Sigmoid from "./Sigmoid";
-import * as Tanh from "./Tanh";
-import * as LeakyReLU from "./LeakyReLU";
-import * as ELU from "./ELU";
-import * as GELU from "./GELU";
-import * as MaxPool2D from "./MaxPool2D";
-import * as MaxPool3D from "./MaxPool3D";
-import * as Linear from "./Linear";
-import * as Flatten from "./Flatten";
-import * as Dropout from "./Dropout";
-import * as BatchNorm2D from "./BatchNorm2D";
-import * as BatchNorm3D from "./BatchNorm3D";
+export { Layer };
+export type { CompatibilityResult };
 
-export const LAYERS: Record<string, LayerModule> = {
-  conv2d: {
-    info: Conv2D.info,
-    InteractiveSimulator: Conv2D.InteractiveSimulator,
-  },
-  conv3d: {
-    info: Conv3D.info,
-    InteractiveSimulator: Conv3D.InteractiveSimulator,
-  },
-  relu: { info: ReLU.info, InteractiveSimulator: ReLU.InteractiveSimulator },
-  sigmoid: {
-    info: Sigmoid.info,
-    InteractiveSimulator: Sigmoid.InteractiveSimulator,
-  },
-  tanh: { info: Tanh.info, InteractiveSimulator: Tanh.InteractiveSimulator },
-  leaky_relu: {
-    info: LeakyReLU.info,
-    InteractiveSimulator: LeakyReLU.InteractiveSimulator,
-  },
-  elu: { info: ELU.info, InteractiveSimulator: ELU.InteractiveSimulator },
-  gelu: { info: GELU.info, InteractiveSimulator: GELU.InteractiveSimulator },
-  maxpool2d: {
-    info: MaxPool2D.info,
-    InteractiveSimulator: MaxPool2D.InteractiveSimulator,
-  },
-  maxpool3d: {
-    info: MaxPool3D.info,
-    InteractiveSimulator: MaxPool3D.InteractiveSimulator,
-  },
-  linear: {
-    info: Linear.info,
-    InteractiveSimulator: Linear.InteractiveSimulator,
-  },
-  flatten: {
-    info: Flatten.info,
-    InteractiveSimulator: Flatten.InteractiveSimulator,
-  },
-  dropout: {
-    info: Dropout.info,
-    InteractiveSimulator: Dropout.InteractiveSimulator,
-  },
-  batchnorm2d: {
-    info: BatchNorm2D.info,
-    InteractiveSimulator: BatchNorm2D.InteractiveSimulator,
-  },
-  batchnorm3d: {
-    info: BatchNorm3D.info,
-    InteractiveSimulator: BatchNorm3D.InteractiveSimulator,
-  },
+import { Conv2DLayer } from "./Conv2D";
+import { Conv3DLayer } from "./Conv3D";
+import { ReLULayer } from "./ReLU";
+import { SigmoidLayer } from "./Sigmoid";
+import { TanhLayer } from "./Tanh";
+import { LeakyReLULayer } from "./LeakyReLU";
+import { ELULayer } from "./ELU";
+import { GELULayer } from "./GELU";
+import { MaxPool2DLayer } from "./MaxPool2D";
+import { MaxPool3DLayer } from "./MaxPool3D";
+import { LinearLayer } from "./Linear";
+import { FlattenLayer } from "./Flatten";
+import { DropoutLayer } from "./Dropout";
+import { BatchNorm2DLayer } from "./BatchNorm2D";
+import { BatchNorm3DLayer } from "./BatchNorm3D";
+import { GroupLayer } from "./Group";
+
+export interface LayerClass {
+  new (node: LayerNode): Layer;
+  description: LayerDescription;
+  demos: React.ComponentType[];
+}
+
+export const LAYERS: Record<LayerType, LayerClass> = {
+  group: GroupLayer,
+  conv2d: Conv2DLayer,
+  conv3d: Conv3DLayer,
+  relu: ReLULayer,
+  sigmoid: SigmoidLayer,
+  tanh: TanhLayer,
+  leaky_relu: LeakyReLULayer,
+  elu: ELULayer,
+  gelu: GELULayer,
+  maxpool2d: MaxPool2DLayer,
+  maxpool3d: MaxPool3DLayer,
+  linear: LinearLayer,
+  flatten: FlattenLayer,
+  dropout: DropoutLayer,
+  batchnorm2d: BatchNorm2DLayer,
+  batchnorm3d: BatchNorm3DLayer,
 };
+
+export function getLayerInstance(node: LayerNode): Layer {
+  const LayerClass = LAYERS[node.type];
+  if (!LayerClass) throw new Error(`Unknown layer type: ${node.type}`);
+  return new LayerClass(node);
+}

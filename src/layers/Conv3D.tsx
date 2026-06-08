@@ -1,8 +1,13 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "conv3d",
   name: "3D Convolution (Conv3D)",
   category: "Convolutional",
@@ -29,33 +34,34 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\n# Shape layout: (Batch, Depth, Height, Width, Channels)\nlayer = layers.Conv3D(\n    filters=64,\n    kernel_size=3,\n    strides=1,\n    padding='same'\n)`,
 };
 
-export const InteractiveSimulator = () => {
-  return (
-    <div className="w-full text-center flex flex-col items-center gap-4 py-3 select-none">
-      <div className="relative w-40 h-28 flex justify-center items-center">
-        <div className="absolute top-0 flex border border-cyan-500/20 rounded bg-cyan-900/10 p-2 w-28 h-20 -rotate-3 hover:translate-x-1.5 transition-transform">
-          <span className="text-[9px] text-zinc-500 font-mono">Frame 1</span>
-        </div>
-        <div className="absolute top-2 flex border border-cyan-500/30 rounded bg-cyan-950/20 p-2 w-28 h-20 rotate-3 translate-x-2 translate-y-2 hover:translate-x-4 transition-transform z-10">
-          <span className="text-[9px] text-cyan-400 font-mono font-bold">
-            Frame 2 [Scanning...]
-          </span>
-        </div>
-        <div className="absolute top-4 flex border border-cyan-500/20 rounded bg-cyan-900/10 p-2 w-28 h-20 rotate-6 translate-x-4 translate-y-4 hover:translate-x-5.5 transition-transform z-20">
-          <span className="text-[9px] text-zinc-500 font-mono">Frame 3</span>
-        </div>
+const Conv3DDemo: React.FC = () => (
+  <div className="w-full text-center flex flex-col items-center gap-4 py-3 select-none">
+    <div className="relative w-40 h-28 flex justify-center items-center">
+      <div className="absolute top-0 flex border border-cyan-500/20 rounded bg-cyan-900/10 p-2 w-28 h-20 -rotate-3 hover:translate-x-1.5 transition-transform">
+        <span className="text-[9px] text-zinc-500 font-mono">Frame 1</span>
       </div>
-
-      <p className="text-xs text-zinc-400 max-w-md antialiased leading-relaxed">
-        3D convolutions slice across chronological stacks or coordinate voxel
-        indices simultaneously. Explore the 3D Space parameters in the 3D tab to
-        inspect visual volumetric volume rendering of the neural connections!
-      </p>
+      <div className="absolute top-2 flex border border-cyan-500/30 rounded bg-cyan-950/20 p-2 w-28 h-20 rotate-3 translate-x-2 translate-y-2 hover:translate-x-4 transition-transform z-10">
+        <span className="text-[9px] text-cyan-400 font-mono font-bold">
+          Frame 2 [Scanning...]
+        </span>
+      </div>
+      <div className="absolute top-4 flex border border-cyan-500/20 rounded bg-cyan-900/10 p-2 w-28 h-20 rotate-6 translate-x-4 translate-y-4 hover:translate-x-5.5 transition-transform z-20">
+        <span className="text-[9px] text-zinc-500 font-mono">Frame 3</span>
+      </div>
     </div>
-  );
-};
+
+    <p className="text-xs text-zinc-400 max-w-md antialiased leading-relaxed">
+      3D convolutions slice across chronological stacks or coordinate voxel
+      indices simultaneously. Explore the 3D Space parameters in the 3D tab to
+      inspect visual volumetric volume rendering of the neural connections!
+    </p>
+  </div>
+);
 
 export class Conv3DLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [Conv3DDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     const { filters, kernelSize, stride, padding } = this.node.params || {};
     const k = kernelSize || 3;
@@ -117,7 +123,7 @@ export class Conv3DLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  getPytorchCode(shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const outC = p.filters || 32;
     const k = p.kernelSize || 3;
@@ -126,6 +132,48 @@ export class Conv3DLayer extends Layer {
 
     const padStr = typeof pad === "number" ? pad.toString() : `'${pad}'`;
     return `nn.Conv3d(in_channels=${shapeBefore.c}, out_channels=${outC}, kernel_size=${k}, stride=${s}, padding=${padStr})`;
+  }
+
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const p = this.node.params || {};
+    const k = p.kernelSize ?? 3;
+    const s = p.stride ?? 1;
+    const pad = p.padding ?? "same";
+    const { c: cin, h: hin, w: win } = inShape;
+    const din = inShape.d ?? 1;
+    const { c: cout, h: hout, w: wout } = outShape;
+    const dout = outShape.d ?? 1;
+
+    const parameterCount = k * k * k * cin * cout + cout;
+    const flopCount = dout * hout * wout * cout * k * k * k * cin * 2;
+
+    let dimensionFormulaD: string;
+    let dimensionFormulaH: string;
+    let dimensionFormulaW: string;
+    if (pad === "same") {
+      dimensionFormulaD = `D_out = ⌈${din} / ${s}⌉ = ${dout}`;
+      dimensionFormulaH = `H_out = ⌈${hin} / ${s}⌉ = ${hout}`;
+      dimensionFormulaW = `W_out = ⌈${win} / ${s}⌉ = ${wout}`;
+    } else if (pad === "valid") {
+      dimensionFormulaD = `D_out = ⌊(${din} - ${k}) / ${s}⌋ + 1 = ${dout}`;
+      dimensionFormulaH = `H_out = ⌊(${hin} - ${k}) / ${s}⌋ + 1 = ${hout}`;
+      dimensionFormulaW = `W_out = ⌊(${win} - ${k}) / ${s}⌋ + 1 = ${wout}`;
+    } else {
+      dimensionFormulaD = `D_out = ⌊(${din} + 2×${pad} - ${k}) / ${s}⌋ + 1 = ${dout}`;
+      dimensionFormulaH = `H_out = ⌊(${hin} + 2×${pad} - ${k}) / ${s}⌋ + 1 = ${hout}`;
+      dimensionFormulaW = `W_out = ⌊(${win} + 2×${pad} - ${k}) / ${s}⌋ + 1 = ${wout}`;
+    }
+
+    return {
+      parameterCount,
+      flopCount,
+      parameterFormula: `(${k} × ${k} × ${k} × ${cin} × ${cout}) [weights] + ${cout} [biases] = ${parameterCount.toLocaleString()}`,
+      flopFormula: `2 × (${dout} × ${hout} × ${wout} × ${cout}) × (${k}³ × ${cin}) = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH,
+      dimensionFormulaW,
+      dimensionFormulaD,
+      explanation: `Applies a bank of ${cout} 3D filters (${k}×${k}×${k}) over a volume tensor. Captures spatiotemporal or multi-spectral depth contexts.`,
+    };
   }
 
   getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {

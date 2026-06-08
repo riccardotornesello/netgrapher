@@ -1,5 +1,5 @@
 import { LayerNode, ImageShape } from "../types";
-import { getLayerInstance } from "./layerutils";
+import { getLayerInstance } from "../layers";
 
 export function exportTensorFlowCode(
   nodes: LayerNode[],

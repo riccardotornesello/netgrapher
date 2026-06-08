@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import { Sliders } from "lucide-react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "linear",
   name: "Linear (Dense / Fully Connected)",
   category: "Linear & Structural",
@@ -29,7 +34,7 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.Dense(units=10)`,
 };
 
-export const InteractiveSimulator = () => {
+const LinearDemo: React.FC = () => {
   const [linInputWeights, setLinInputWeights] = useState<number[]>([
     0.5, -0.8, 1.2, -0.3,
   ]);
@@ -141,7 +146,10 @@ export const InteractiveSimulator = () => {
 };
 
 export class LinearLayer extends Layer {
-  calculateOutputShape(inputShape: ImageShape): ImageShape {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [LinearDemo];
+
+  calculateOutputShape(_inputShape: ImageShape): ImageShape {
     return { c: this.node.params?.outFeatures || 128, h: 1, w: 1 };
   }
 
@@ -159,14 +167,32 @@ export class LinearLayer extends Layer {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const p = this.node.params || {};
+    const outF = p.outFeatures ?? 128;
+    const inF = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+    const parameterCount = inF * outF + outF;
+    const flopCount = inF * outF * 2;
+
+    return {
+      parameterCount,
+      flopCount,
+      parameterFormula: `(${inF} [flat input] × ${outF} [outputs]) + ${outF} [biases] = ${parameterCount.toLocaleString()}`,
+      flopFormula: `2 × (${inF} inputs) × (${outF} units) = ${flopCount.toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = 1 (Vectorized)`,
+      dimensionFormulaW: `W_out = 1 (Vectorized)`,
+      explanation: `Fully connected (dense) layer. Every unit from the flattened incoming tensor is multiplied by a learnable weight matrix to yield a ${outF}-dimensional representation.`,
+    };
+  }
+
+  getPytorchCode(shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const outF = p.outFeatures || 128;
     const inF = shapeBefore.c * shapeBefore.h * shapeBefore.w;
     return `nn.Linear(in_features=${inF}, out_features=${outF})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     const outF = p.outFeatures || 128;
     return `layers.Dense(units=${outF})`;

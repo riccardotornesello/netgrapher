@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   GraduationCap,
   BookOpen,
@@ -15,16 +15,18 @@ import {
 import { cn } from "../lib/utils";
 import { Latex } from "./Latex";
 import { LAYERS } from "../layers";
+import { LayerType } from "../types";
 
 export function DidacticHub() {
-  const [selectedLayerId, setSelectedLayerId] = useState<string>("conv2d");
+  const [selectedLayerId, setSelectedLayerId] = useState<LayerType>("conv2d");
   const [copiedCodeTab, setCopiedCodeTab] = useState<"pytorch" | "tensorflow">(
     "pytorch",
   );
   const [isCopied, setIsCopied] = useState<boolean>(false);
 
-  const activeLayer = LAYERS[selectedLayerId]?.info || LAYERS.conv2d.info;
-  const InteractiveSimulator = LAYERS[selectedLayerId]?.InteractiveSimulator;
+  const LayerClass = LAYERS[selectedLayerId] || LAYERS.conv2d;
+  const activeLayer = LayerClass.description;
+  const DemoComponent = LayerClass.demos[0];
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -68,7 +70,7 @@ export function DidacticHub() {
               </span>
               <div className="flex flex-col gap-0.5 mt-1">
                 {Object.values(LAYERS)
-                  .map((m) => m.info)
+                  .map((L) => L.description)
                   .filter((l) => l.category === category)
                   .map((layer) => (
                     <button
@@ -180,7 +182,7 @@ export function DidacticHub() {
         </div>
 
         {/* Dynamic & Interactive Simulator Animations playground */}
-        {InteractiveSimulator && (
+        {DemoComponent && (
           <div className="bg-zinc-900/40 border border-zinc-800/40 p-6 rounded-2xl backdrop-blur-md">
             <div className="flex items-center justify-between mb-5 select-none">
               <div className="flex items-center gap-2">
@@ -196,7 +198,7 @@ export function DidacticHub() {
             </div>
 
             <div className="bg-zinc-950 p-5 rounded-xl border border-zinc-900 min-h-[280px] flex flex-col justify-center items-center">
-              <InteractiveSimulator />
+              <DemoComponent />
             </div>
           </div>
         )}

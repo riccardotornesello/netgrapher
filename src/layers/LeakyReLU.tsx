@@ -1,9 +1,15 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
+
 import { ActivationSimulator } from "./ActivationHelper";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "leaky_relu",
   name: "Leaky Rectified Linear Unit (Leaky ReLU)",
   category: "Activation",
@@ -29,24 +35,43 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.LeakyReLU(alpha=0.01)`,
 };
 
-export const InteractiveSimulator = () => {
-  return <ActivationSimulator type="leaky_relu" name="Leaky ReLU" />;
-};
+const LeakyReLUDemo: React.FC = () => (
+  <ActivationSimulator type="leaky_relu" name="Leaky ReLU" />
+);
 
 export class LeakyReLULayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [LeakyReLUDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
 
-  checkCompatibility(inputShape: ImageShape): CompatibilityResult {
+  checkCompatibility(_inputShape: ImageShape): CompatibilityResult {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+    const dim =
+      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
+    return {
+      parameterCount: 0,
+      flopCount: elements * 2,
+      parameterFormula: `0 (Activation function has no learnable weights)`,
+      flopFormula: `${elements.toLocaleString()} elements × 2 operations [f(x) = max(0.01x, x)] = ${(elements * 2).toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+      dimensionFormulaD: dim,
+      explanation: `Allows a microscopic gradient slope of 0.01 when the activation is negative, preventing the "dying ReLU" lockup.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     return `nn.LeakyReLU(negative_slope=0.01)`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.LeakyReLU(negative_slope=0.01)`;
   }
 }

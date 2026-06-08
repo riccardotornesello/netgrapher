@@ -1,9 +1,15 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
+
 import { ActivationSimulator } from "./ActivationHelper";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "sigmoid",
   name: "Sigmoid Activation (Sigmoid)",
   category: "Activation",
@@ -28,24 +34,43 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.Activation('sigmoid')`,
 };
 
-export const InteractiveSimulator = () => {
-  return <ActivationSimulator type="sigmoid" name="Sigmoid" />;
-};
+const SigmoidDemo: React.FC = () => (
+  <ActivationSimulator type="sigmoid" name="Sigmoid" />
+);
 
 export class SigmoidLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [SigmoidDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
 
-  checkCompatibility(inputShape: ImageShape): CompatibilityResult {
+  checkCompatibility(_inputShape: ImageShape): CompatibilityResult {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+    const dim =
+      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
+    return {
+      parameterCount: 0,
+      flopCount: elements * 4,
+      parameterFormula: `0 (Activation function has no learnable weights)`,
+      flopFormula: `${elements.toLocaleString()} elements × 4 operations [f(x) = 1 / (1 + e^-x)] = ${(elements * 4).toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+      dimensionFormulaD: dim,
+      explanation: `Sigmoid activation maps input values strictly to the (0, 1) range, forming smooth, probability-like activation outputs.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     return `nn.Sigmoid()`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.Activation('sigmoid')`;
   }
 }

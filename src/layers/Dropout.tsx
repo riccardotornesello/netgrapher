@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { Sliders, Dice5 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "dropout",
   name: "Dropout",
   category: "Regularization",
@@ -30,7 +35,7 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.Dropout(rate=0.5)`,
 };
 
-export const InteractiveSimulator = () => {
+const DropoutDemo: React.FC = () => {
   const [dropoutTrigger, setDropoutTrigger] = useState<number>(0);
 
   const getDropoutMask = () => {
@@ -94,20 +99,42 @@ export const InteractiveSimulator = () => {
 };
 
 export class DropoutLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [DropoutDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
 
-  checkCompatibility(inputShape: ImageShape): CompatibilityResult {
+  checkCompatibility(_inputShape: ImageShape): CompatibilityResult {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const rate = this.node.params?.rate ?? 0.5;
+    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+    const { h: hout, w: wout } = outShape;
+    const dimensionFormulaD =
+      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
+
+    return {
+      parameterCount: 0,
+      flopCount: elements,
+      parameterFormula: `0 (Regularization logic has no parameters)`,
+      flopFormula: `${elements.toLocaleString()} random drop checks = ${elements.toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${hout}`,
+      dimensionFormulaW: `W_out = W_in = ${wout}`,
+      dimensionFormulaD,
+      explanation: `Randomly shuts down a fraction of ${rate * 100}% input activations during training. Severe anti-overfitting technique forcing redundant network representations.`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     return `nn.Dropout(p=${p.rate || 0.5})`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     const p = this.node.params || {};
     return `layers.Dropout(rate=${p.rate || 0.5})`;
   }

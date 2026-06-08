@@ -1,9 +1,15 @@
 import React from "react";
-import { LayerDescription, ImageShape } from "../types";
-import { Layer, CompatibilityResult } from "../lib/layerbase";
+import {
+  LayerDescription,
+  ImageShape,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
+
 import { ActivationSimulator } from "./ActivationHelper";
 
-export const info: LayerDescription = {
+const description: LayerDescription = {
   id: "gelu",
   name: "Gaussian Error Linear Unit (GELU)",
   category: "Activation",
@@ -28,24 +34,43 @@ export const info: LayerDescription = {
   codeTensorFlow: `from tensorflow.keras import layers\n\nlayer = layers.Activation('gelu')`,
 };
 
-export const InteractiveSimulator = () => {
-  return <ActivationSimulator type="gelu" name="GELU" />;
-};
+const GELUDemo: React.FC = () => (
+  <ActivationSimulator type="gelu" name="GELU" />
+);
 
 export class GELULayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [GELUDemo];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     return { ...inputShape };
   }
 
-  checkCompatibility(inputShape: ImageShape): CompatibilityResult {
+  checkCompatibility(_inputShape: ImageShape): CompatibilityResult {
     return { compatible: true };
   }
 
-  getPytorchCode(shapeBefore: ImageShape, indent: string): string {
+  computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
+    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+    const dim =
+      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
+    return {
+      parameterCount: 0,
+      flopCount: elements * 6,
+      parameterFormula: `0 (Activation function has no learnable weights)`,
+      flopFormula: `${elements.toLocaleString()} elements × 6 operations [f(x) = x × CDF(x)] = ${(elements * 6).toLocaleString()} FLOPs`,
+      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+      dimensionFormulaD: dim,
+      explanation: `Applies Gaussian Error Linear activation scales. Heavily leveraged across Transformer architectures (BERT, GPTs).`,
+    };
+  }
+
+  getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {
     return `nn.GELU()`;
   }
 
-  getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
+  getTensorFlowCode(_shapeBefore: ImageShape, _indent: string): string {
     return `layers.Activation('gelu')`;
   }
 }

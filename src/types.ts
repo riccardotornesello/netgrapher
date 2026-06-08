@@ -1,5 +1,3 @@
-import React from "react";
-
 export type LayerType =
   | "conv2d"
   | "conv3d"
@@ -42,7 +40,7 @@ export interface LayerNode {
 }
 
 export interface LayerDescription {
-  id: string;
+  id: LayerType;
   name: string;
   category:
     | "Convolutional"
@@ -63,12 +61,39 @@ export interface LayerDescription {
   codeTensorFlow: string;
 }
 
-export interface LayerModule {
-  info: LayerDescription;
-  InteractiveSimulator?: React.ComponentType | null;
+export interface LayerStats {
+  parameterCount: number;
+  flopCount: number;
+  parameterFormula: string;
+  flopFormula: string;
+  dimensionFormulaH: string;
+  dimensionFormulaW: string;
+  dimensionFormulaD?: string;
+  explanation: string;
 }
 
 export interface AddModalTarget {
   parentId?: string;
   index: number;
 }
+
+export interface CompatibilityResult {
+  compatible: boolean;
+  reason?: string;
+}
+
+export abstract class Layer {
+  protected node: LayerNode;
+
+  constructor(node: LayerNode) {
+    this.node = node;
+  }
+
+  abstract calculateOutputShape(inputShape: ImageShape): ImageShape;
+  abstract checkCompatibility(inputShape: ImageShape): CompatibilityResult;
+  abstract getPytorchCode(shapeBefore: ImageShape, indent: string): string;
+  abstract getTensorFlowCode(shapeBefore: ImageShape, indent: string): string;
+  abstract computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats;
+}
+
+export type LayerConstructor = new (node: LayerNode) => Layer;

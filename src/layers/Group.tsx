@@ -1,26 +1,33 @@
-import { ImageShape, LayerNode } from "../types";
-import { Layer } from "./layerbase";
-import type { CompatibilityResult } from "./layerbase";
-export { Layer };
-export type { CompatibilityResult };
+import React from "react";
+import {
+  ImageShape,
+  LayerDescription,
+  LayerStats,
+  Layer,
+  CompatibilityResult,
+} from "../types";
+import { getLayerInstance } from "./index";
 
-import { Conv2DLayer } from "../layers/Conv2D";
-import { Conv3DLayer } from "../layers/Conv3D";
-import { ReLULayer } from "../layers/ReLU";
-import { SigmoidLayer } from "../layers/Sigmoid";
-import { TanhLayer } from "../layers/Tanh";
-import { LeakyReLULayer } from "../layers/LeakyReLU";
-import { ELULayer } from "../layers/ELU";
-import { GELULayer } from "../layers/GELU";
-import { MaxPool2DLayer } from "../layers/MaxPool2D";
-import { MaxPool3DLayer } from "../layers/MaxPool3D";
-import { LinearLayer } from "../layers/Linear";
-import { FlattenLayer } from "../layers/Flatten";
-import { DropoutLayer } from "../layers/Dropout";
-import { BatchNorm2DLayer } from "../layers/BatchNorm2D";
-import { BatchNorm3DLayer } from "../layers/BatchNorm3D";
+const description: LayerDescription = {
+  id: "group",
+  name: "Group",
+  category: "Linear & Structural",
+  concept: "",
+  keyTakeaways: [],
+  proTips: "",
+  forwardEquation: "",
+  derivativeEquation: "",
+  sizeFormulaHTML: "",
+  parameterFormula: "",
+  flopFormula: "",
+  codePyTorch: "",
+  codeTensorFlow: "",
+};
 
 export class GroupLayer extends Layer {
+  static description: LayerDescription = description;
+  static demos: React.ComponentType[] = [];
+
   calculateOutputShape(inputShape: ImageShape): ImageShape {
     if (!this.node.children || this.node.children.length === 0) {
       return inputShape;
@@ -55,14 +62,12 @@ export class GroupLayer extends Layer {
     if (!this.node.children || this.node.children.length === 0) {
       return `nn.Sequential()`;
     }
-    let childStrs: string[] = [];
+    const childStrs: string[] = [];
     let tempShape = { ...shapeBefore };
     for (const child of this.node.children) {
       const inst = getLayerInstance(child);
       const childStr = inst.getPytorchCode(tempShape, indent + "    ");
-      if (childStr) {
-        childStrs.push(childStr);
-      }
+      if (childStr) childStrs.push(childStr);
       tempShape = inst.calculateOutputShape(tempShape);
     }
     return (
@@ -72,18 +77,28 @@ export class GroupLayer extends Layer {
     );
   }
 
+  computeStats(_inShape: ImageShape, _outShape: ImageShape): LayerStats {
+    return {
+      parameterCount: 0,
+      flopCount: 0,
+      parameterFormula: `Calculated in sub-modules`,
+      flopFormula: `Calculated in sub-modules`,
+      dimensionFormulaH: `Depends on sub-layers`,
+      dimensionFormulaW: `Depends on sub-layers`,
+      explanation: `A sequential group nesting multiple sub-layers. Isolates reusable architectural blocks like residual columns, bottlenecks, or inception patterns.`,
+    };
+  }
+
   getTensorFlowCode(shapeBefore: ImageShape, indent: string): string {
     if (!this.node.children || this.node.children.length === 0) {
       return `tf.keras.Sequential()`;
     }
-    let childStrs: string[] = [];
+    const childStrs: string[] = [];
     let tempShape = { ...shapeBefore };
     for (const child of this.node.children) {
       const inst = getLayerInstance(child);
       const childStr = inst.getTensorFlowCode(tempShape, indent + "    ");
-      if (childStr) {
-        childStrs.push(childStr);
-      }
+      if (childStr) childStrs.push(childStr);
       tempShape = inst.calculateOutputShape(tempShape);
     }
     return (
@@ -91,44 +106,5 @@ export class GroupLayer extends Layer {
       childStrs.join(`,\n${indent}    `) +
       `\n${indent}])`
     );
-  }
-}
-
-export function getLayerInstance(node: LayerNode): Layer {
-  switch (node.type) {
-    case "conv2d":
-      return new Conv2DLayer(node);
-    case "conv3d":
-      return new Conv3DLayer(node);
-    case "relu":
-      return new ReLULayer(node);
-    case "sigmoid":
-      return new SigmoidLayer(node);
-    case "tanh":
-      return new TanhLayer(node);
-    case "leaky_relu":
-      return new LeakyReLULayer(node);
-    case "elu":
-      return new ELULayer(node);
-    case "gelu":
-      return new GELULayer(node);
-    case "maxpool2d":
-      return new MaxPool2DLayer(node);
-    case "maxpool3d":
-      return new MaxPool3DLayer(node);
-    case "linear":
-      return new LinearLayer(node);
-    case "flatten":
-      return new FlattenLayer(node);
-    case "dropout":
-      return new DropoutLayer(node);
-    case "batchnorm2d":
-      return new BatchNorm2DLayer(node);
-    case "batchnorm3d":
-      return new BatchNorm3DLayer(node);
-    case "group":
-      return new GroupLayer(node);
-    default:
-      throw new Error(`Unknown layer type: ${node.type}`);
   }
 }
