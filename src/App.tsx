@@ -97,7 +97,7 @@ function AppContent() {
 
       {/* Header */}
       <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-3 sm:px-6 shrink-0 bg-zinc-900/40 relative z-10 backdrop-blur-sm">
-        <div className="flex items-center min-w-0">
+        <div className="flex items-center">
           <div className="w-7 h-7 bg-indigo-500/10 rounded flex items-center justify-center border border-indigo-500/20 mr-3 shadow-inner">
             <Box className="w-4 h-4 text-indigo-400" />
           </div>
@@ -106,7 +106,7 @@ function AppContent() {
           </h1>
 
           {/* Visualizer Mode Segment Toggle */}
-          <div className="flex items-center gap-1 bg-zinc-950 border border-zinc-800/70 rounded-lg p-0.5 ml-2 sm:ml-8 h-8 select-none min-w-0">
+          <div className="flex items-center gap-1 bg-zinc-950 border border-zinc-800/70 rounded-lg p-0.5 ml-2 sm:ml-8 h-8 select-none">
             <button
               onClick={() => setActiveTab("designer")}
               className={cn(
