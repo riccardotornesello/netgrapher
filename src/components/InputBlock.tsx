@@ -37,7 +37,7 @@ export function InputBlock() {
         )}
       >
         {/* Input Header Panel */}
-        <div className="flex items-center justify-between p-4 select-none">
+        <div className="flex flex-wrap items-start sm:items-center sm:justify-between gap-3 p-4 select-none">
           <div className="flex items-center gap-3">
             <div
               className={cn(
@@ -64,7 +64,7 @@ export function InputBlock() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex w-full sm:w-auto items-center justify-between sm:justify-end gap-2">
             {!isSelected && (
               <span className="text-xs text-zinc-400 shrink-0 group-hover/input:text-zinc-200 transition-colors">
                 Configure
