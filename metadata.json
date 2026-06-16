@@ -1,5 +1,5 @@
 {
-  "name": "Neural Network Architect",
+  "name": "NetGrapher",
   "description": "An application to design and visualize neural network architectures, supporting custom layers, and nested grouping blocks.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

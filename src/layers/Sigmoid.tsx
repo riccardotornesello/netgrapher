@@ -7,7 +7,10 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
+import {
+  ActivationSimulator,
+  computeActivationStats,
+} from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "sigmoid",
@@ -51,7 +54,13 @@ export class SigmoidLayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    return computeActivationStats(inShape, outShape, 4, "f(x) = 1 / (1 + e^-x)", "Sigmoid activation maps input values strictly to the (0, 1) range, forming smooth, probability-like activation outputs.");
+    return computeActivationStats(
+      inShape,
+      outShape,
+      4,
+      "f(x) = 1 / (1 + e^-x)",
+      "Sigmoid activation maps input values strictly to the (0, 1) range, forming smooth, probability-like activation outputs.",
+    );
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

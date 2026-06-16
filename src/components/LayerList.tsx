@@ -19,7 +19,7 @@ export function LayerList({ nodes, initialShape, parentId }: LayerListProps) {
   let hasIncompatibilityOccurred = !initialShape;
 
   return (
-    <div className="flex flex-col items-center w-full relative pt-1">
+    <div className="flex flex-col items-center w-full relative">
       <AddBetweenButton parentId={parentId} index={0} />
 
       {nodes.map((node, index) => {

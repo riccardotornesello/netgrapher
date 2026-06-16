@@ -7,7 +7,10 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
+import {
+  ActivationSimulator,
+  computeActivationStats,
+} from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "tanh",
@@ -50,7 +53,13 @@ export class TanhLayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    return computeActivationStats(inShape, outShape, 5, "f(x) = tanh(x)", "Maps inputs to the (-1, 1) range around zero, keeping activations zero-centered to stabilize deep computational paths.");
+    return computeActivationStats(
+      inShape,
+      outShape,
+      5,
+      "f(x) = tanh(x)",
+      "Maps inputs to the (-1, 1) range around zero, keeping activations zero-centered to stabilize deep computational paths.",
+    );
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

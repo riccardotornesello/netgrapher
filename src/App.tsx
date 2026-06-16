@@ -102,7 +102,7 @@ function AppContent() {
             <Box className="w-4 h-4 text-indigo-400" />
           </div>
           <h1 className="font-semibold text-[13px] tracking-widest text-zinc-300 uppercase select-none hidden sm:inline">
-            Neural Network Architect
+            NetGrapher
           </h1>
 
           {/* Visualizer Mode Segment Toggle */}
@@ -131,10 +131,6 @@ function AppContent() {
             >
               <Rotate3d className="w-3.5 h-3.5" />
               <span>3D Flow</span>
-              <span className="absolute -top-1 -right-1 flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500"></span>
-              </span>
             </button>
 
             <button

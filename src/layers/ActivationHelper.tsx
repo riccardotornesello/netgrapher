@@ -18,7 +18,8 @@ export function computeActivationStats(
     flopFormula: `${elements.toLocaleString()} elements × ${flopMultiplier} operations [${flopDescription}] = ${(elements * flopMultiplier).toLocaleString()} FLOPs`,
     dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
     dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
-    dimensionFormulaD: inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined,
+    dimensionFormulaD:
+      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined,
     explanation,
   };
 }

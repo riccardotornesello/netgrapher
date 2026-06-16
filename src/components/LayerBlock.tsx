@@ -5,7 +5,11 @@ import { ImageShape, LayerNode } from "../types";
 import { cn } from "../lib/utils";
 import { useNetwork } from "../context/NetworkContext";
 import { LayerList } from "./LayerList";
-import { LAYER_ICONS, LAYER_LABELS, LAYER_COLOR_CLASS } from "../lib/layerRegistry";
+import {
+  LAYER_ICONS,
+  LAYER_LABELS,
+  LAYER_COLOR_CLASS,
+} from "../lib/layerRegistry";
 
 interface LayerBlockProps {
   node: LayerNode;
@@ -101,7 +105,9 @@ export function LayerBlock({
       : "bg-red-950/15 shadow-xl overflow-hidden";
   }
 
-  const iconColor = isCompatible ? (LAYER_COLOR_CLASS[node.type] ?? "text-zinc-400") : "text-red-400";
+  const iconColor = isCompatible
+    ? (LAYER_COLOR_CLASS[node.type] ?? "text-zinc-400")
+    : "text-red-400";
 
   return (
     <motion.div
@@ -129,7 +135,9 @@ export function LayerBlock({
           <div
             className={cn("p-1.5 rounded-md bg-zinc-800 shrink-0", iconColor)}
           >
-            {React.createElement(LAYER_ICONS[node.type], { className: "w-4 h-4" })}
+            {React.createElement(LAYER_ICONS[node.type], {
+              className: "w-4 h-4",
+            })}
           </div>
 
           <div className="flex-1 min-w-0">

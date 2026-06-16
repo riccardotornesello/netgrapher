@@ -55,50 +55,52 @@ export function DidacticHub() {
 
         {/* Navigation Layers Panel */}
         <div className="bg-zinc-900/30 border border-zinc-855 rounded-2xl p-2.5 flex flex-col gap-1 overflow-hidden">
-          {LAYER_GROUP_ORDER.filter((c) => !LAYER_GROUPS[c].wikiExcluded).map((category) => (
-            <div key={category} className="mb-2">
-              <span className="text-[9.5px] uppercase tracking-widest text-zinc-500 font-bold px-3 py-1 block">
-                {LAYER_GROUPS[category].name}
-              </span>
-              <div className="flex flex-col gap-0.5 mt-1">
-                {Object.values(LAYERS)
-                  .map((L) => L.description)
-                  .filter((l) => l.category === category)
-                  .map((layer) => (
-                    <button
-                      key={layer.id}
-                      onClick={() => setSelectedLayerId(layer.id)}
-                      className={cn(
-                        "w-full px-3 py-2 rounded-xl text-left text-[11.5px] font-medium transition-all cursor-pointer flex items-center justify-between group",
-                        selectedLayerId === layer.id
-                          ? "bg-cyan-955/40 border border-cyan-800/50 text-cyan-300"
-                          : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent",
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
+          {LAYER_GROUP_ORDER.filter((c) => !LAYER_GROUPS[c].wikiExcluded).map(
+            (category) => (
+              <div key={category} className="mb-2">
+                <span className="text-[9.5px] uppercase tracking-widest text-zinc-500 font-bold px-3 py-1 block">
+                  {LAYER_GROUPS[category].name}
+                </span>
+                <div className="flex flex-col gap-0.5 mt-1">
+                  {Object.values(LAYERS)
+                    .map((L) => L.description)
+                    .filter((l) => l.category === category)
+                    .map((layer) => (
+                      <button
+                        key={layer.id}
+                        onClick={() => setSelectedLayerId(layer.id)}
+                        className={cn(
+                          "w-full px-3 py-2 rounded-xl text-left text-[11.5px] font-medium transition-all cursor-pointer flex items-center justify-between group",
+                          selectedLayerId === layer.id
+                            ? "bg-cyan-955/40 border border-cyan-800/50 text-cyan-300"
+                            : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/40 border border-transparent",
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "w-1.5 h-1.5 rounded-full",
+                              selectedLayerId === layer.id
+                                ? "bg-cyan-400 animate-pulse"
+                                : "bg-zinc-700 group-hover:bg-zinc-400",
+                            )}
+                          />
+                          <span>{layer.name.split(" (")[0]}</span>
+                        </div>
+                        <ChevronRight
                           className={cn(
-                            "w-1.5 h-1.5 rounded-full",
+                            "w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all",
                             selectedLayerId === layer.id
-                              ? "bg-cyan-400 animate-pulse"
-                              : "bg-zinc-700 group-hover:bg-zinc-400",
+                              ? "opacity-100 text-cyan-400"
+                              : "text-zinc-500",
                           )}
                         />
-                        <span>{layer.name.split(" (")[0]}</span>
-                      </div>
-                      <ChevronRight
-                        className={cn(
-                          "w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all",
-                          selectedLayerId === layer.id
-                            ? "opacity-100 text-cyan-400"
-                            : "text-zinc-500",
-                        )}
-                      />
-                    </button>
-                  ))}
+                      </button>
+                    ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       </div>
 

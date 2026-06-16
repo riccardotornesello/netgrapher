@@ -7,7 +7,10 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
+import {
+  ActivationSimulator,
+  computeActivationStats,
+} from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "relu",
@@ -53,7 +56,13 @@ export class ReLULayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    return computeActivationStats(inShape, outShape, 1, "f(x) = max(0, x)", "Element-wise rectified linear activation function. Thresholds all negative signals to zero, introducing mandatory non-linear decision scope to the neural network.");
+    return computeActivationStats(
+      inShape,
+      outShape,
+      1,
+      "f(x) = max(0, x)",
+      "Element-wise rectified linear activation function. Thresholds all negative signals to zero, introducing mandatory non-linear decision scope to the neural network.",
+    );
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

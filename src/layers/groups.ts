@@ -12,7 +12,8 @@ export interface LayerGroupInfo {
 export const LAYER_GROUPS: Record<LayerCategory, LayerGroupInfo> = {
   Convolutional: {
     name: "Convolutions",
-    description: "Learnable filters that slide over spatial inputs to extract local features.",
+    description:
+      "Learnable filters that slide over spatial inputs to extract local features.",
     colorToken: "indigo",
     iconColorClass: "text-indigo-400",
     hoverColorClass: "hover:border-indigo-500/50 hover:bg-indigo-950/10",
@@ -26,14 +27,16 @@ export const LAYER_GROUPS: Record<LayerCategory, LayerGroupInfo> = {
   },
   Normalization: {
     name: "Normalization",
-    description: "Stabilize training by normalizing activations across channels or batches.",
+    description:
+      "Stabilize training by normalizing activations across channels or batches.",
     colorToken: "cyan",
     iconColorClass: "text-cyan-400",
     hoverColorClass: "hover:border-cyan-500/50 hover:bg-cyan-950/10",
   },
   Activation: {
     name: "Activation Functions",
-    description: "Non-linear transformations applied element-wise to introduce expressivity.",
+    description:
+      "Non-linear transformations applied element-wise to introduce expressivity.",
     colorToken: "emerald",
     iconColorClass: "text-emerald-400",
     hoverColorClass: "hover:border-emerald-500/50 hover:bg-emerald-950/10",

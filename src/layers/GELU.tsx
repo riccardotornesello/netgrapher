@@ -7,7 +7,10 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
+import {
+  ActivationSimulator,
+  computeActivationStats,
+} from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "gelu",
@@ -51,7 +54,13 @@ export class GELULayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    return computeActivationStats(inShape, outShape, 6, "f(x) = x × CDF(x)", "Applies Gaussian Error Linear activation scales. Heavily leveraged across Transformer architectures (BERT, GPTs).");
+    return computeActivationStats(
+      inShape,
+      outShape,
+      6,
+      "f(x) = x × CDF(x)",
+      "Applies Gaussian Error Linear activation scales. Heavily leveraged across Transformer architectures (BERT, GPTs).",
+    );
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

@@ -8,13 +8,19 @@ export function updateNodeRecursive(
   return nodes.map((node) => {
     if (node.id === id) return updater(node);
     if (node.children) {
-      return { ...node, children: updateNodeRecursive(node.children, id, updater) };
+      return {
+        ...node,
+        children: updateNodeRecursive(node.children, id, updater),
+      };
     }
     return node;
   });
 }
 
-export function deleteNodeRecursive(nodes: LayerNode[], id: string): LayerNode[] {
+export function deleteNodeRecursive(
+  nodes: LayerNode[],
+  id: string,
+): LayerNode[] {
   return nodes
     .filter((node) => node.id !== id)
     .map((node) => {
