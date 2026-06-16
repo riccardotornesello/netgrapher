@@ -15,6 +15,7 @@ import {
 import { cn } from "../lib/utils";
 import { Latex } from "./Latex";
 import { LAYERS } from "../layers";
+import { LAYER_GROUPS, LAYER_GROUP_ORDER } from "../layers/groups";
 import { LayerType } from "../types";
 
 export function DidacticHub() {
@@ -54,19 +55,10 @@ export function DidacticHub() {
 
         {/* Navigation Layers Panel */}
         <div className="bg-zinc-900/30 border border-zinc-855 rounded-2xl p-2.5 flex flex-col gap-1 overflow-hidden">
-          {(
-            [
-              "Convolutional",
-              "Activation",
-              "Pooling",
-              "Linear & Structural",
-              "Regularization",
-              "Normalization",
-            ] as const
-          ).map((category) => (
+          {LAYER_GROUP_ORDER.filter((c) => !LAYER_GROUPS[c].wikiExcluded).map((category) => (
             <div key={category} className="mb-2">
               <span className="text-[9.5px] uppercase tracking-widest text-zinc-500 font-bold px-3 py-1 block">
-                {category}
+                {LAYER_GROUPS[category].name}
               </span>
               <div className="flex flex-col gap-0.5 mt-1">
                 {Object.values(LAYERS)
@@ -123,7 +115,7 @@ export function DidacticHub() {
               </div>
               <div>
                 <span className="text-[10px] tracking-widest uppercase font-mono text-cyan-500 font-bold">
-                  {activeLayer.category} Layer
+                  {LAYER_GROUPS[activeLayer.category].name}
                 </span>
                 <h2 className="text-xl font-bold text-zinc-100 mt-0.5">
                   {activeLayer.name}

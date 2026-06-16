@@ -16,6 +16,15 @@ export type LayerType =
   | "batchnorm2d"
   | "batchnorm3d";
 
+export type LayerCategory =
+  | "Convolutional"
+  | "Activation"
+  | "Pooling"
+  | "Linear & Structural"
+  | "Regularization"
+  | "Normalization"
+  | "Structuring";
+
 export interface ImageShape {
   c: number;
   d?: number;
@@ -42,13 +51,7 @@ export interface LayerNode {
 export interface LayerDescription {
   id: LayerType;
   name: string;
-  category:
-    | "Convolutional"
-    | "Activation"
-    | "Pooling"
-    | "Linear & Structural"
-    | "Regularization"
-    | "Normalization";
+  category: LayerCategory;
   concept: string;
   keyTakeaways: string[];
   proTips: string;

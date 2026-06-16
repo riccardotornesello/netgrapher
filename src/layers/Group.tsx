@@ -11,7 +11,7 @@ import { getLayerInstance } from "./index";
 const description: LayerDescription = {
   id: "group",
   name: "Group",
-  category: "Linear & Structural",
+  category: "Structuring",
   concept: "",
   keyTakeaways: [],
   proTips: "",
