@@ -28,7 +28,7 @@ import {
 import { cn } from "./lib/utils";
 
 function AppContent() {
-  const { selectedNodeId } = useNetwork();
+  const { selectedNodeId, setSelectedNodeId } = useNetwork();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -243,7 +243,10 @@ function AppContent() {
                 Layer settings
               </span>
               <button
-                onClick={() => setIsSidebarOpen(false)}
+                onClick={() => {
+                  setIsSidebarOpen(false)
+                  setSelectedNodeId(null)
+                }}
                 className="p-1.5 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
                 title="Close settings"
                 aria-label="Close settings"
@@ -255,7 +258,10 @@ function AppContent() {
           {/* Edge-collapsing grip button for sidebar */}
           {isSidebarOpen && (
             <button
-              onClick={() => setIsSidebarOpen(false)}
+              onClick={() => {
+                setIsSidebarOpen(false)
+                setSelectedNodeId(null)
+              }}
               className="hidden md:flex absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-12 bg-zinc-900 hover:bg-zinc-805 border border-zinc-700/80 hover:border-zinc-500 rounded-full items-center justify-center transition-all z-50 text-zinc-400 hover:text-zinc-200 cursor-pointer shadow-lg"
               title="Hide settings"
             >
