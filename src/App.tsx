@@ -246,6 +246,7 @@ function AppContent() {
                 onClick={() => setIsSidebarOpen(false)}
                 className="p-1.5 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
                 title="Close settings"
+                aria-label="Close settings"
               >
                 <X className="w-4 h-4" />
               </button>
