@@ -28,7 +28,7 @@ import {
 import { cn } from "./lib/utils";
 
 function AppContent() {
-  const { selectedNodeId } = useNetwork();
+  const { selectedNodeId, setSelectedNodeId } = useNetwork();
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -96,7 +96,7 @@ function AppContent() {
       )}
 
       {/* Header */}
-      <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-6 shrink-0 bg-zinc-900/40 relative z-10 backdrop-blur-sm">
+      <header className="h-14 border-b border-zinc-800/50 flex items-center justify-between px-3 sm:px-6 shrink-0 bg-zinc-900/40 relative z-10 backdrop-blur-sm">
         <div className="flex items-center">
           <div className="w-7 h-7 bg-indigo-500/10 rounded flex items-center justify-center border border-indigo-500/20 mr-3 shadow-inner">
             <Box className="w-4 h-4 text-indigo-400" />
@@ -106,54 +106,54 @@ function AppContent() {
           </h1>
 
           {/* Visualizer Mode Segment Toggle */}
-          <div className="flex items-center gap-1.5 bg-zinc-950 border border-zinc-800/70 rounded-lg p-0.5 ml-4 sm:ml-8 h-8 select-none">
+          <div className="flex items-center gap-1 bg-zinc-950 border border-zinc-800/70 rounded-lg p-0.5 ml-2 sm:ml-8 h-8 select-none">
             <button
               onClick={() => setActiveTab("designer")}
               className={cn(
-                "px-2.5 py-0.5 h-full rounded-md text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer",
+                "px-2 sm:px-2.5 py-0.5 h-full rounded-md text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shrink-0",
                 activeTab === "designer"
                   ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-inner"
                   : "text-zinc-500 hover:text-zinc-350 border border-transparent",
               )}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Canvas 2D</span>
+              <span className="hidden sm:inline">Canvas 2D</span>
             </button>
 
             <button
               onClick={() => setActiveTab("threed")}
               className={cn(
-                "px-2.5 py-0.5 h-full rounded-md text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer relative",
+                "px-2 sm:px-2.5 py-0.5 h-full rounded-md text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer relative shrink-0",
                 activeTab === "threed"
                   ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-inner"
                   : "text-zinc-500 hover:text-zinc-350 border border-transparent",
               )}
             >
               <Rotate3d className="w-3.5 h-3.5" />
-              <span>3D Flow</span>
+              <span className="hidden sm:inline">3D Flow</span>
             </button>
 
             <button
               onClick={() => setActiveTab("didactic")}
               className={cn(
-                "px-2.5 py-0.5 h-full rounded-md text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer",
+                "px-2 sm:px-2.5 py-0.5 h-full rounded-md text-[10.5px] font-bold tracking-wider uppercase transition-all flex items-center gap-1.5 cursor-pointer shrink-0",
                 activeTab === "didactic"
                   ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-inner"
                   : "text-zinc-500 hover:text-zinc-350 border border-transparent",
               )}
             >
               <GraduationCap className="w-3.5 h-3.5" />
-              <span>Theory Hub</span>
+              <span className="hidden sm:inline">Theory Hub</span>
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Toggle Sidebar Button - only visible in designer tab when something is selected */}
           {selectedNodeId !== null && activeTab === "designer" && (
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-md text-xs font-medium transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-md text-xs font-medium transition-colors cursor-pointer"
               title={
                 isSidebarOpen
                   ? "Hide configuration sidebar"
@@ -176,18 +176,18 @@ function AppContent() {
 
           <button
             onClick={() => setIsJsonModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-md text-xs font-medium transition-colors ml-1 cursor-pointer"
+            className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-md text-xs font-medium transition-colors ml-0 sm:ml-1 cursor-pointer"
           >
             <FileCode className="w-4 h-4 text-cyan-400" />
-            JSON Model
+            <span className="hidden sm:inline">JSON Model</span>
           </button>
 
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-300 rounded-md text-xs font-medium transition-colors cursor-pointer"
+            className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 text-zinc-300 rounded-md text-xs font-medium transition-colors cursor-pointer"
           >
             <Code className="w-4 h-4 text-indigo-400" />
-            Export Code
+            <span className="hidden sm:inline">Export Code</span>
           </button>
         </div>
       </header>
@@ -215,7 +215,7 @@ function AppContent() {
             activeTab === "designer" && (
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="fixed right-0 top-1/2 -translate-y-1/2 bg-zinc-900/90 border-l border-t border-b border-zinc-700/60 p-2.5 rounded-l-xl text-cyan-400 hover:text-cyan-300 hover:bg-zinc-805/90 hover:pl-4 transition-all z-40 shadow-2xl flex items-center justify-center cursor-pointer group"
+                className="hidden md:flex fixed right-0 top-1/2 -translate-y-1/2 bg-zinc-900/90 border-l border-t border-b border-zinc-700/60 p-2.5 rounded-l-xl text-cyan-400 hover:text-cyan-300 hover:bg-zinc-805/90 hover:pl-4 transition-all z-40 shadow-2xl items-center justify-center cursor-pointer group"
                 title="Open parameters"
               >
                 <div className="flex flex-col items-center gap-1">
@@ -231,23 +231,44 @@ function AppContent() {
         {/* Sidebar */}
         <aside
           className={cn(
-            "border-l border-zinc-800/50 bg-zinc-950 flex flex-col shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.2)] z-20 transition-all duration-300 relative",
+            "bg-zinc-950 flex flex-col shrink-0 z-40 md:z-20 transition-all duration-300 md:relative md:border-l md:border-zinc-800/50 md:shadow-[-10px_0_30px_rgba(0,0,0,0.2)]",
             isSidebarOpen
-              ? "w-80 opacity-100"
-              : "w-0 opacity-0 pointer-events-none border-l-0 overflow-hidden",
+              ? "fixed inset-0 w-full opacity-100 pointer-events-auto md:inset-auto md:w-80"
+              : "fixed inset-0 w-full opacity-0 pointer-events-none overflow-hidden md:inset-auto md:w-0 md:border-l-0",
           )}
         >
+          {isSidebarOpen && (
+            <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-800/70">
+              <span className="text-xs font-semibold tracking-widest uppercase text-zinc-400">
+                Layer settings
+              </span>
+              <button
+                onClick={() => {
+                  setIsSidebarOpen(false)
+                  setSelectedNodeId(null)
+                }}
+                className="p-1.5 rounded-md border border-zinc-800 bg-zinc-900 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer"
+                title="Close settings"
+                aria-label="Close settings"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           {/* Edge-collapsing grip button for sidebar */}
           {isSidebarOpen && (
             <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-12 bg-zinc-900 hover:bg-zinc-805 border border-zinc-700/80 hover:border-zinc-500 rounded-full flex items-center justify-center transition-all z-50 text-zinc-400 hover:text-zinc-200 cursor-pointer shadow-lg"
+              onClick={() => {
+                setIsSidebarOpen(false)
+                setSelectedNodeId(null)
+              }}
+              className="hidden md:flex absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-12 bg-zinc-900 hover:bg-zinc-805 border border-zinc-700/80 hover:border-zinc-500 rounded-full items-center justify-center transition-all z-50 text-zinc-400 hover:text-zinc-200 cursor-pointer shadow-lg"
               title="Hide settings"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           )}
-          <div className="flex-1 w-80 h-full overflow-y-auto">
+          <div className="flex-1 w-full h-full overflow-y-auto md:w-80">
             <Inspector />
           </div>
         </aside>
