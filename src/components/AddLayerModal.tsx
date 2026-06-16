@@ -3,57 +3,8 @@ import { useNetwork } from "../context/NetworkContext";
 import { LayerType } from "../types";
 import { LAYERS } from "../layers";
 import { LAYER_GROUPS, LAYER_GROUP_ORDER } from "../layers/groups";
-import {
-  X,
-  Layers,
-  Activity,
-  Box,
-  Maximize,
-  GitCommit,
-  Menu,
-  CircleDashed,
-  Sliders,
-  LucideIcon,
-} from "lucide-react";
-
-const LAYER_ICONS: Partial<Record<LayerType, LucideIcon>> = {
-  conv2d: Layers,
-  conv3d: Layers,
-  maxpool2d: Maximize,
-  maxpool3d: Maximize,
-  batchnorm2d: Sliders,
-  batchnorm3d: Sliders,
-  relu: Activity,
-  sigmoid: Activity,
-  tanh: Activity,
-  leaky_relu: Activity,
-  elu: Activity,
-  gelu: Activity,
-  dropout: CircleDashed,
-  flatten: Menu,
-  linear: GitCommit,
-  group: Box,
-};
-
-const COLOR_HOVER: Record<string, string> = {
-  indigo: "hover:border-indigo-500/50 hover:bg-indigo-950/10",
-  orange: "hover:border-orange-500/50 hover:bg-orange-950/10",
-  cyan: "hover:border-cyan-500/50 hover:bg-cyan-950/10",
-  emerald: "hover:border-emerald-500/50 hover:bg-emerald-950/10",
-  red: "hover:border-red-500/50 hover:bg-red-950/10",
-  purple: "hover:border-purple-500/50 hover:bg-purple-950/10",
-  blue: "hover:border-blue-500/50 hover:bg-blue-950/10",
-};
-
-const COLOR_ICON: Record<string, string> = {
-  indigo: "text-indigo-400",
-  orange: "text-orange-400",
-  cyan: "text-cyan-400",
-  emerald: "text-emerald-400",
-  red: "text-red-400",
-  purple: "text-purple-400",
-  blue: "text-blue-400",
-};
+import { LAYER_ICONS } from "../lib/layerRegistry";
+import { X } from "lucide-react";
 
 export function AddLayerModal() {
   const { addModalTarget, setAddModalTarget, addLayer } = useNetwork();
@@ -77,11 +28,11 @@ export function AddLayerModal() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-zinc-950/80 backdrop-blur-sm sm:p-4 animate-in fade-in duration-200"
       onClick={() => setAddModalTarget(null)}
     >
       <div
-        className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh] overflow-hidden"
+        className="bg-zinc-900 border border-zinc-800 sm:rounded-xl rounded-t-2xl shadow-2xl w-full sm:max-w-3xl flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/80">
@@ -109,11 +60,6 @@ export function AddLayerModal() {
             );
             if (layers.length === 0) return null;
 
-            const hoverClass =
-              COLOR_HOVER[group.colorToken] ?? COLOR_HOVER.indigo;
-            const iconClass =
-              COLOR_ICON[group.colorToken] ?? COLOR_ICON.indigo;
-
             return (
               <div key={category} className="space-y-3">
                 <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest pl-1">
@@ -121,15 +67,15 @@ export function AddLayerModal() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {layers.map((layer) => {
-                    const Icon = LAYER_ICONS[layer.id] ?? Layers;
+                    const Icon = LAYER_ICONS[layer.id] ?? LAYER_ICONS.conv2d;
                     return (
                       <button
                         key={layer.id}
                         onClick={() => handleSelectLayer(layer.id)}
-                        className={`flex items-start text-left gap-3.5 p-3.5 rounded-lg border border-zinc-850 bg-zinc-900/40 hover:bg-zinc-900/80 hover:scale-[1.01] transition-all cursor-pointer ${hoverClass}`}
+                        className={`flex items-start text-left gap-3.5 p-3.5 rounded-lg border border-zinc-850 bg-zinc-900/40 hover:bg-zinc-900/80 hover:scale-[1.01] transition-all cursor-pointer ${group.hoverColorClass}`}
                       >
                         <div className="p-2 rounded-md bg-zinc-850 mt-0.5 shrink-0">
-                          <Icon className={`w-4 h-4 ${iconClass}`} />
+                          <Icon className={`w-4 h-4 ${group.iconColorClass}`} />
                         </div>
                         <div className="space-y-1">
                           <h4 className="text-xs font-semibold text-zinc-200">

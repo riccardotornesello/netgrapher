@@ -7,7 +7,7 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator } from "./ActivationHelper";
+import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "elu",
@@ -50,19 +50,7 @@ export class ELULayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
-    const dim =
-      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
-    return {
-      parameterCount: 0,
-      flopCount: elements * 3,
-      parameterFormula: `0 (Activation function has no learnable weights)`,
-      flopFormula: `${elements.toLocaleString()} elements × 3 operations [f(x) = x if x >= 0 else a(e^x - 1)] = ${(elements * 3).toLocaleString()} FLOPs`,
-      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
-      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
-      dimensionFormulaD: dim,
-      explanation: `Smoothly fits exponential scales for negative activations to speed up standard convergence curves.`,
-    };
+    return computeActivationStats(inShape, outShape, 3, "f(x) = x if x >= 0 else a(e^x - 1)", "Smoothly fits exponential scales for negative activations to speed up standard convergence curves.");
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

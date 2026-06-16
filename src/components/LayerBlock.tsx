@@ -1,23 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
-import {
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  Activity,
-  Box,
-  Trash2,
-  Maximize,
-  GitCommit,
-  Menu,
-  CircleDashed,
-  Sliders,
-  Pencil,
-} from "lucide-react";
-import { ImageShape, LayerNode, LayerType } from "../types";
+import { ChevronDown, ChevronRight, Trash2, Pencil } from "lucide-react";
+import { ImageShape, LayerNode } from "../types";
 import { cn } from "../lib/utils";
 import { useNetwork } from "../context/NetworkContext";
 import { LayerList } from "./LayerList";
+import { LAYER_ICONS, LAYER_LABELS, LAYER_COLOR_CLASS } from "../lib/layerRegistry";
 
 interface LayerBlockProps {
   node: LayerNode;
@@ -25,44 +13,6 @@ interface LayerBlockProps {
   outShape: ImageShape | null;
   compatibility?: { compatible: boolean; reason?: string };
 }
-
-const icons: Record<LayerType, React.ReactNode> = {
-  conv2d: <Layers className="w-4 h-4" />,
-  conv3d: <Layers className="w-4 h-4" />,
-  relu: <Activity className="w-4 h-4" />,
-  sigmoid: <Activity className="w-4 h-4" />,
-  tanh: <Activity className="w-4 h-4" />,
-  leaky_relu: <Activity className="w-4 h-4" />,
-  elu: <Activity className="w-4 h-4" />,
-  gelu: <Activity className="w-4 h-4" />,
-  group: <Box className="w-4 h-4" />,
-  maxpool2d: <Maximize className="w-4 h-4" />,
-  maxpool3d: <Maximize className="w-4 h-4" />,
-  linear: <GitCommit className="w-4 h-4" />,
-  flatten: <Menu className="w-4 h-4" />,
-  dropout: <CircleDashed className="w-4 h-4" />,
-  batchnorm2d: <Sliders className="w-4 h-4" />,
-  batchnorm3d: <Sliders className="w-4 h-4" />,
-};
-
-const typeLabels: Record<LayerType, string> = {
-  conv2d: "Conv2D",
-  conv3d: "Conv3D",
-  relu: "ReLU",
-  sigmoid: "Sigmoid",
-  tanh: "Tanh",
-  leaky_relu: "Leaky ReLU",
-  elu: "ELU",
-  gelu: "GELU",
-  group: "Group",
-  maxpool2d: "MaxPool2D",
-  maxpool3d: "MaxPool3D",
-  linear: "Linear",
-  flatten: "Flatten",
-  dropout: "Dropout",
-  batchnorm2d: "BatchNorm2D",
-  batchnorm3d: "BatchNorm3D",
-};
 
 export function LayerBlock({
   node,
@@ -151,45 +101,7 @@ export function LayerBlock({
       : "bg-red-950/15 shadow-xl overflow-hidden";
   }
 
-  let iconColor = isCompatible ? "text-zinc-400" : "text-red-400";
-
-  if (isCompatible) {
-    switch (node.type) {
-      case "conv2d":
-        iconColor = "text-indigo-400";
-        break;
-      case "conv3d":
-        iconColor = "text-indigo-300";
-        break;
-      case "relu":
-        iconColor = "text-emerald-400";
-        break;
-      case "group":
-        iconColor = "text-blue-400";
-        break;
-      case "maxpool2d":
-        iconColor = "text-orange-400";
-        break;
-      case "maxpool3d":
-        iconColor = "text-orange-300";
-        break;
-      case "linear":
-        iconColor = "text-purple-400";
-        break;
-      case "flatten":
-        iconColor = "text-yellow-400";
-        break;
-      case "dropout":
-        iconColor = "text-red-400";
-        break;
-      case "batchnorm2d":
-        iconColor = "text-cyan-400";
-        break;
-      case "batchnorm3d":
-        iconColor = "text-cyan-300";
-        break;
-    }
-  }
+  const iconColor = isCompatible ? (LAYER_COLOR_CLASS[node.type] ?? "text-zinc-400") : "text-red-400";
 
   return (
     <motion.div
@@ -217,7 +129,7 @@ export function LayerBlock({
           <div
             className={cn("p-1.5 rounded-md bg-zinc-800 shrink-0", iconColor)}
           >
-            {icons[node.type]}
+            {React.createElement(LAYER_ICONS[node.type], { className: "w-4 h-4" })}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -289,7 +201,7 @@ export function LayerBlock({
         </div>
 
         <span className="text-[9px] text-zinc-400 font-mono bg-zinc-800/80 px-1.5 py-0.5 rounded border border-zinc-700/50 shrink-0 uppercase tracking-wide inline-flex items-center justify-center leading-none h-fit">
-          {typeLabels[node.type]}
+          {LAYER_LABELS[node.type]}
         </span>
 
         <button

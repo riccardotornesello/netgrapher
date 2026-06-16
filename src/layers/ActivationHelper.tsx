@@ -1,6 +1,27 @@
 import React, { useState } from "react";
 import { Sliders } from "lucide-react";
 import { cn } from "../lib/utils";
+import { ImageShape, LayerStats } from "../types";
+
+export function computeActivationStats(
+  inShape: ImageShape,
+  outShape: ImageShape,
+  flopMultiplier: number,
+  flopDescription: string,
+  explanation: string,
+): LayerStats {
+  const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
+  return {
+    parameterCount: 0,
+    flopCount: elements * flopMultiplier,
+    parameterFormula: `0 (Activation function has no learnable weights)`,
+    flopFormula: `${elements.toLocaleString()} elements × ${flopMultiplier} operations [${flopDescription}] = ${(elements * flopMultiplier).toLocaleString()} FLOPs`,
+    dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
+    dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
+    dimensionFormulaD: inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined,
+    explanation,
+  };
+}
 
 export function evalActivation(type: string, x: number): number {
   switch (type) {

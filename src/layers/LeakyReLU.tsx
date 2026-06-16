@@ -7,7 +7,7 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator } from "./ActivationHelper";
+import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "leaky_relu",
@@ -52,19 +52,7 @@ export class LeakyReLULayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
-    const dim =
-      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
-    return {
-      parameterCount: 0,
-      flopCount: elements * 2,
-      parameterFormula: `0 (Activation function has no learnable weights)`,
-      flopFormula: `${elements.toLocaleString()} elements × 2 operations [f(x) = max(0.01x, x)] = ${(elements * 2).toLocaleString()} FLOPs`,
-      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
-      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
-      dimensionFormulaD: dim,
-      explanation: `Allows a microscopic gradient slope of 0.01 when the activation is negative, preventing the "dying ReLU" lockup.`,
-    };
+    return computeActivationStats(inShape, outShape, 2, "f(x) = max(0.01x, x)", `Allows a microscopic gradient slope of 0.01 when the activation is negative, preventing the "dying ReLU" lockup.`);
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

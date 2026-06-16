@@ -252,8 +252,8 @@ export function ImportExportJsonModal({ onClose }: ImportExportJsonModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4">
-      <div className="bg-zinc-900 border border-zinc-805 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-zinc-950/80 backdrop-blur-sm sm:p-4">
+      <div className="bg-zinc-900 border border-zinc-805 sm:rounded-2xl rounded-t-2xl shadow-2xl w-full sm:max-w-2xl flex flex-col h-[90vh] sm:h-auto sm:max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header containing tabs */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800 bg-zinc-900/60">
           <div className="flex gap-4">

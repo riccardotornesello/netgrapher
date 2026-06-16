@@ -7,7 +7,7 @@ import {
   CompatibilityResult,
 } from "../types";
 
-import { ActivationSimulator } from "./ActivationHelper";
+import { ActivationSimulator, computeActivationStats } from "./ActivationHelper";
 
 const description: LayerDescription = {
   id: "sigmoid",
@@ -51,19 +51,7 @@ export class SigmoidLayer extends Layer {
   }
 
   computeStats(inShape: ImageShape, outShape: ImageShape): LayerStats {
-    const elements = inShape.c * (inShape.d ?? 1) * inShape.h * inShape.w;
-    const dim =
-      inShape.d !== undefined ? `D_out = D_in = ${outShape.d}` : undefined;
-    return {
-      parameterCount: 0,
-      flopCount: elements * 4,
-      parameterFormula: `0 (Activation function has no learnable weights)`,
-      flopFormula: `${elements.toLocaleString()} elements × 4 operations [f(x) = 1 / (1 + e^-x)] = ${(elements * 4).toLocaleString()} FLOPs`,
-      dimensionFormulaH: `H_out = H_in = ${outShape.h}`,
-      dimensionFormulaW: `W_out = W_in = ${outShape.w}`,
-      dimensionFormulaD: dim,
-      explanation: `Sigmoid activation maps input values strictly to the (0, 1) range, forming smooth, probability-like activation outputs.`,
-    };
+    return computeActivationStats(inShape, outShape, 4, "f(x) = 1 / (1 + e^-x)", "Sigmoid activation maps input values strictly to the (0, 1) range, forming smooth, probability-like activation outputs.");
   }
 
   getPytorchCode(_shapeBefore: ImageShape, _indent: string): string {

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { ImageShape, LayerNode, LayerType, AddModalTarget } from "../types";
 import { generateId } from "../lib/networkUtils";
+import { updateNodeRecursive, deleteNodeRecursive } from "../lib/treeUtils";
+import { LAYER_LABELS } from "../lib/layerRegistry";
 
 interface NetworkContextType {
   layers: LayerNode[];
@@ -50,29 +52,10 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   };
 
   const addLayer = (type: LayerType, parentId?: string, index?: number) => {
-    const names: Record<LayerType, string> = {
-      conv2d: "Conv2D",
-      conv3d: "Conv3D",
-      relu: "ReLU",
-      sigmoid: "Sigmoid",
-      tanh: "Tanh",
-      leaky_relu: "Leaky ReLU",
-      elu: "ELU",
-      gelu: "GELU",
-      group: "Group",
-      maxpool2d: "MaxPool2D",
-      maxpool3d: "MaxPool3D",
-      linear: "Linear / Dense",
-      flatten: "Flatten",
-      dropout: "Dropout",
-      batchnorm2d: "BatchNorm2D",
-      batchnorm3d: "BatchNorm3D",
-    };
-
     const newNode: LayerNode = {
       id: generateId(),
       type,
-      name: names[type] || type,
+      name: LAYER_LABELS[type] ?? type,
       params: { ...defaultParams[type] },
       ...(type === "group" ? { children: [], isExpanded: true } : {}),
     };
@@ -101,38 +84,8 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateNodeRecursive = (
-    nodes: LayerNode[],
-    id: string,
-    updater: (node: LayerNode) => LayerNode,
-  ): LayerNode[] => {
-    return nodes.map((node) => {
-      if (node.id === id) {
-        return updater(node);
-      }
-      if (node.children) {
-        return {
-          ...node,
-          children: updateNodeRecursive(node.children, id, updater),
-        };
-      }
-      return node;
-    });
-  };
-
   const updateLayer = (id: string, updater: (node: LayerNode) => LayerNode) => {
     setLayers((prev) => updateNodeRecursive(prev, id, updater));
-  };
-
-  const deleteNodeRecursive = (nodes: LayerNode[], id: string): LayerNode[] => {
-    return nodes
-      .filter((node) => node.id !== id)
-      .map((node) => {
-        if (node.children) {
-          return { ...node, children: deleteNodeRecursive(node.children, id) };
-        }
-        return node;
-      });
   };
 
   const deleteLayer = (id: string) => {
